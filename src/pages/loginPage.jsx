@@ -1,88 +1,110 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import "./LoginPage.css"; // ← separate stylesheet for Login
 
 export default function LoginPage({ onLogin }) {
-  // simple local state
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Local form state
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    remember: false,
+  });
+  // Feedback state
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // basic submit handler (swap for your real fetch/axios)
+  // Generic change handler for inputs/checkbox
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+  };
+
+  // Minimal email validation helper
+  const isValidEmail = (str) => /\S+@\S+\.\S+/.test(str);
+
+  // Submit handler (replace with your real API call)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // minimal validation
-    if (!email || !password) {
-      setError("Please fill in email and password.");
+    if (!form.email || !form.password) {
+      setError("Please fill in Email and Password.");
+      return;
+    }
+    if (!isValidEmail(form.email)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     try {
-      // fake login simulation (replace with your API)
-      // const res = await fetch("/api/login", { method: "POST", body: JSON.stringify({ email, password }) });
-      // const data = await res.json();
+      setLoading(true);
 
-      // on success:
-      onLogin?.({ email }); // optional: pass user data up to the app
-    } catch (err) {
-      console.error("Login error:", err);
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Login failed. Please try again.";
-      setError(msg);
+      // Example (replace with your endpoint):
+      // const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {...});
+      // const data = await res.json();
+      // if (!res.ok) return setError(data?.message || "Invalid email or password.");
+
+      onLogin?.({ email: form.email, remember: form.remember }); // notify parent/app
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="login-wrap">
-      <section className="login-card" aria-labelledby="login-title">
-        <h1 id="login-title">Login</h1>
+    <div className="tm-login">
+      <form className="tm-card" onSubmit={handleSubmit} noValidate>
+        <h1 className="tm-title">Log In</h1>
 
-        <form onSubmit={handleSubmit} className="login-form" noValidate>
-          <label>
-            Email
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              aria-invalid={!!error && (!email || !password)}
-            />
-          </label>
+        {/* Email */}
+        <label className="tm-field">
+          <span className="tm-label-text">Email</span>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+          />
+        </label>
 
-          <label>
-            Password
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              aria-invalid={!!error && (!email || !password)}
-            />
-          </label>
+        {/* Password */}
+        <label className="tm-field">
+          <span className="tm-label-text">Password</span>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+          />
+        </label>
 
-          {!!error && (
-            <p className="error-msg" role="alert">
-              {error}
-            </p>
-          )}
+        {/* Remember me */}
+        <label className="tm-check">
+          <input
+            type="checkbox"
+            name="remember"
+            checked={form.remember}
+            onChange={handleChange}
+          />
+          <span>Remember me</span>
+        </label>
 
-          <button type="submit" className="btn-primary">
-            Sign in
-          </button>
-        </form>
+        {/* Error message */}
+        {error && <p className="tm-error">{error}</p>}
 
-        <p className="helper-text">
-          Don’t have an account?
-          <Link to="/signup"> Create one</Link>
+        {/* Primary action */}
+        <button className="tm-cta" type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Log In"}
+        </button>
+
+        {/* Helper */}
+        <p className="tm-helper">
+          Don’t have an account? <Link to="/signup">Create one</Link>
         </p>
-      </section>
-    </main>
+      </form>
+    </div>
   );
 }

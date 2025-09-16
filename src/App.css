@@ -1,8 +1,12 @@
+html,
+body,
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
+}
+.tm-app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -39,4 +43,7 @@
 
 .read-the-docs {
   color: #888;
+}
+.tm-main {
+  flex: 1;
 }

@@ -1,0 +1,52 @@
+/* TripMatchFooter.css */
+
+/* Namespace: tudo do footer começa com .tm-footer */
+.tm-footer {
+  width: 100%;
+  height: 56px;
+  background: #8eafb3; /* cor igual ao seu mock */
+  display: grid;
+  place-items: center;
+  padding-inline: 16px;
+}
+
+/* container interno */
+.tm-footer__nav {
+  width: min(1024px, 100%);
+  display: flex;
+  justify-content: space-around; /* 3 links bem espaçados */
+  align-items: center;
+}
+
+/* links do footer (blindados contra CSS global) */
+.tm-footer__link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  line-height: 1;
+  padding: 10px 6px; /* alvo de toque confortável */
+  opacity: 0.95;
+  transition: opacity 0.2s ease, text-underline-offset 0.2s ease;
+}
+
+.tm-footer__link:hover,
+.tm-footer__link:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* opcional: borda superior bem leve */
+.tm-footer {
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.06) inset;
+}
+
+/* mobile */
+@media (max-width: 420px) {
+  .tm-footer__nav {
+    justify-content: space-between;
+  }
+  .tm-footer__link {
+    font-size: 15px;
+  }
+}

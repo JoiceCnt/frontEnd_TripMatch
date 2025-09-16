@@ -1,0 +1,164 @@
+/* LoginPage.css — fully scoped to .tm-login, no global selectors */
+
+/* Container + scoped design tokens */
+.tm-login {
+  /* Design tokens (scoped) */
+  --ink: #1c3739;
+  --outline: #87aeb0;
+  --accent: #6a8b8d; /* requested accent */
+  --cta: #94a7a6;
+  --cta-shadow: #708887;
+
+  min-height: 100dvh;
+  display: grid;
+  place-items: start center;
+  padding-top: 48px; /* leave space for future navbar */
+  background: #fff;
+  color: var(--ink);
+}
+
+/* Card */
+.tm-login .tm-card {
+  width: min(540px, 92vw);
+  padding: 10px 20px 28px;
+  background: transparent;
+}
+
+/* Title */
+.tm-login .tm-title {
+  text-align: center;
+  font-size: 44px;
+  font-weight: 500;
+  margin: 10px 0 18px 0;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+
+/* Field */
+.tm-login .tm-field {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+/* Visually hidden label text (accessible to screen readers) */
+.tm-login .tm-label-text {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+/* Inputs */
+.tm-login .tm-field input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--outline);
+  border-radius: 12px;
+  outline: none;
+  font-size: 18px;
+  color: var(--ink);
+  background: #f7fbfb;
+}
+
+.tm-login .tm-field input::placeholder {
+  color: #6a8b8d;
+  opacity: 1;
+}
+
+/* Checkbox row */
+.tm-login .tm-check {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 10px 0;
+  line-height: 1.35;
+  font-size: 15.5px;
+}
+
+/* Force accent for checkbox (scoped) */
+.tm-login input[type="checkbox"] {
+  accent-color: var(--accent) !important;
+  transform: scale(1.05);
+}
+
+/* Fallback custom style: only inside .tm-login */
+.tm-login .tm-check input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 2px solid var(--accent);
+  background: #fff;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.tm-login .tm-check input[type="checkbox"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 82% 0, 44% 62%);
+  background: var(--accent);
+}
+.tm-login .tm-check input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+/* Messages */
+.tm-login .tm-error {
+  color: var(--ink);
+  margin: 6px 0 2px;
+  font-size: 14px;
+}
+
+/* CTA button */
+.tm-login .tm-cta {
+  display: block;
+  width: 320px;
+  max-width: 100%;
+  margin: 18px auto 0;
+  padding: 14px 18px;
+  font-size: 24px;
+  border: none;
+  border-radius: 999px;
+  background: var(--cta);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 0 var(--cta-shadow);
+  transition: transform 0.05s ease-in-out, box-shadow 0.05s ease-in-out,
+    opacity 0.15s;
+}
+.tm-login .tm-cta:active {
+  transform: translateY(2px);
+  box-shadow: 0 6px 0 var(--cta-shadow);
+}
+.tm-login .tm-cta:hover {
+  opacity: 0.95;
+}
+
+/* Helper text under the button */
+.tm-login .tm-helper {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #6a8b8d;
+}
+.tm-login .tm-helper a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Small screens */
+@media (max-width: 420px) {
+  .tm-login .tm-title {
+    font-size: 38px;
+  }
+}

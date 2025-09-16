@@ -2,7 +2,7 @@
 :root {
   --ink: #1c3739;
   --outline: #87aeb0;
-  --accent: #6fa0a3;
+  --accent: #6a8b8d; /* <- novo tom pedido */
   --cta: #94a7a6;
   --cta-shadow: #708887;
 }
@@ -61,7 +61,7 @@
 
 .tm-field input::placeholder {
   color: #6a8b8d;
-  opacity: 0.95;
+  opacity: 100;
 }
 
 /* Gender group */
@@ -155,4 +155,83 @@
   .tm-radio {
     margin-right: 16px;
   }
+}
+/* --- FORCE accent color (highest priority) --- */
+.tm-gender input[type="radio"],
+.tm-check input[type="checkbox"],
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #6a8b8d !important;
+}
+
+/* Opcional: legenda e textos do grupo gender no mesmo tom */
+.tm-gender legend,
+.tm-radio span,
+.tm-check span {
+  color: #6a8b8d;
+}
+
+/* Acessibilidade: foco visível no mesmo tom */
+.tm-gender input[type="radio"]:focus-visible,
+.tm-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid #6a8b8d;
+  outline-offset: 2px;
+}
+
+/* --- FALLBACK (custom controls) caso accent-color seja ignorado por algum CSS/lib --- */
+/* Remova as 6 regras abaixo se o accent-color já funcionar */
+.tm-check input[type="checkbox"],
+.tm-gender input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 2px solid #6a8b8d;
+  background: #fff;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+}
+
+/* Checkbox quadrado, radio redondo */
+.tm-check input[type="checkbox"] {
+  border-radius: 6px;
+}
+.tm-gender input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* “miolo” que aparece quando marcado */
+.tm-check input[type="checkbox"]::before,
+.tm-gender input[type="radio"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+}
+
+/* checkmark para checkbox */
+.tm-check input[type="checkbox"]::before {
+  /* pequeno “tick” geométrico */
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 82% 0, 44% 62%);
+  background: #6a8b8d;
+}
+
+/* bolinha para radio */
+.tm-gender input[type="radio"]::before {
+  border-radius: 50%;
+  background: #6a8b8d;
+}
+
+.tm-check input[type="checkbox"]:checked::before,
+.tm-gender input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+/* Mãozinha ao passar por cima dos labels também */
+.tm-radio,
+.tm-check {
+  cursor: pointer;
 }
