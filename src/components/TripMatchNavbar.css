@@ -1,6 +1,6 @@
 /* ---------- Theme tokens ---------- */
 :root {
-  --bg: #a1a4a0; /* navbar background */
+  --bg: #8eafb3; /* navbar background */
   --ink: #1c3739; /* text / outline */
   --white: #fff;
   --radius: 8px;
@@ -9,7 +9,7 @@
 
 /* ---------- Navbar shell ---------- */
 .tm-navbar {
-  position: sticky; /* stays on top when scrolling */
+  position: sticky; /* fica no topo ao rolar */
   top: 0;
   z-index: 1000;
   height: var(--nav-h);
@@ -25,16 +25,32 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Never let random global rules stretch the navbar */
-.tm-navbar * {
+/* Blindagem contra regras globais (ex.: img { display:block }) */
+.tm-navbar img,
+.tm-navbar svg {
+  display: inline-block;
+  max-width: none;
   height: auto;
+}
+
+.tm-navbar a {
+  text-decoration: none;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ---------- Brand (left) ---------- */
 .tm-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
 }
 .tm-brand-pin {
   width: 22px;
@@ -43,7 +59,6 @@
 .tm-brand-name {
   font-size: 20px;
   letter-spacing: 0.2px;
-  color: var(--ink);
 }
 
 /* ---------- Center buttons ---------- */
@@ -52,7 +67,7 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  flex: 1; /* keeps buttons centered */
+  flex: 1; /* mantém centralizado */
 }
 .tm-navbtn {
   padding: 0.48rem 0.9rem;
@@ -60,13 +75,12 @@
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   color: var(--ink);
-  text-decoration: none;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
 }
 .tm-navbtn.active {
-  outline: 2px solid #1c3739;
+  outline: 2px solid var(--ink);
   outline-offset: 1px;
 }
 
@@ -83,6 +97,7 @@
   border-radius: 999px;
   color: var(--ink);
   font-weight: 600;
+  cursor: pointer;
 }
 .tm-avatar-btn {
   width: 40px;
@@ -92,17 +107,13 @@
   border-radius: 999px;
   border: 1px solid var(--ink);
   background: var(--white);
+  cursor: pointer;
 }
 .tm-avatar-btn img {
   width: 18px;
   height: 18px;
 }
 
-/* ---------- Page content spacing helper ---------- */
-/* Add this class to any page that renders the navbar and wants top spacing */
-.with-navbar {
-  padding-top: var(--nav-h);
-}
 /* ------- Right side: user dropdown ------- */
 .tm-user {
   position: relative;
@@ -110,7 +121,6 @@
   align-items: center;
 }
 
-/* Menu panel */
 .tm-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -122,9 +132,8 @@
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
   padding: 6px;
   z-index: 1200;
+  transform-origin: top right;
 }
-
-/* Menu items */
 .tm-menu-item {
   width: 100%;
   text-align: left;
@@ -142,15 +151,11 @@
 .tm-menu-item:active {
   background: rgba(28, 55, 57, 0.14);
 }
-
-/* Separator */
 .tm-menu-sep {
   border: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   margin: 6px 4px;
 }
-
-/* Destructive action style */
 .tm-danger {
   color: #9b2c2c;
 }
@@ -158,7 +163,8 @@
   background: rgba(155, 44, 44, 0.08);
 }
 
-/* Make sure the dropdown never gets stretched by global rules */
-.tm-menu * {
-  height: auto;
+/* ---------- Page content spacing helper ---------- */
+/* Use APENAS se você trocar o navbar para position: fixed */
+.with-navbar {
+  padding-top: var(--nav-h);
 }

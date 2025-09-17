@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import "./LoginPage.css"; // ← separate stylesheet for Login
+import "./LoginPage.css";
 
 export default function LoginPage({ onLogin }) {
   // Local form state

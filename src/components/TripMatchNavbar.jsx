@@ -1,17 +1,18 @@
+// src/components/TripMatchNavbar.jsx
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import "./TripMatchNavbar.css"; // << CSS separado
 
 export default function TripMatchNavbar({
-  variant = "home", // "home" shows the big Log In button
-  isAuthenticated = false, // when true, show avatar + dropdown
-  onLoginClick, // handler for Log In (home)
-  onLogout, // handler for Log out
+  variant = "home",
+  isAuthenticated = false,
+  onLoginClick,
+  onLogout,
 }) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false); // dropdown open/close
+  const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Close the dropdown when clicking outside
   useEffect(() => {
     function onDocClick(e) {
       if (!menuRef.current) return;
@@ -21,7 +22,6 @@ export default function TripMatchNavbar({
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-  // Small helper actions
   const goProfile = () => {
     setOpen(false);
     navigate("/profile");
@@ -29,32 +29,38 @@ export default function TripMatchNavbar({
 
   const doLogout = () => {
     setOpen(false);
-    onLogout?.(); // parent clears auth/session
-    navigate("/"); // optional: back to home
+    onLogout?.();
+    navigate("/");
   };
+
+  const linkClass = ({ isActive }) => `tm-navbtn${isActive ? " active" : ""}`;
 
   return (
     <header className="tm-navbar" role="banner" aria-label="Primary">
       {/* Left: brand */}
-      <div className="tm-brand" onClick={() => navigate("/")}>
+      <button
+        className="tm-brand"
+        onClick={() => navigate("/")}
+        aria-label="Home"
+      >
         <img src="/icons/pin-dark.svg" alt="" className="tm-brand-pin" />
         <span className="tm-brand-name">
           <strong>Trip</strong>&nbsp;Match
         </span>
-      </div>
+      </button>
 
       {/* Center: nav buttons */}
       <nav className="tm-nav" aria-label="Main navigation">
-        <NavLink className="tm-navbtn" to="/activities">
+        <NavLink to="/activities" className={linkClass}>
           Activities
         </NavLink>
-        <NavLink className="tm-navbtn" to="/stories">
+        <NavLink to="/stories" className={linkClass}>
           Member Stories
         </NavLink>
-        <NavLink className="tm-navbtn" to="/feed">
+        <NavLink to="/feed" className={linkClass}>
           Feed
         </NavLink>
-        <NavLink className="tm-navbtn" to="/itinerary">
+        <NavLink to="/itinerary" className={linkClass}>
           Itinerary
         </NavLink>
       </nav>
@@ -71,7 +77,6 @@ export default function TripMatchNavbar({
           </button>
         ) : (
           <div className="tm-user" ref={menuRef}>
-            {/* Avatar button opens the dropdown */}
             <button
               className="tm-avatar-btn"
               aria-haspopup="menu"
@@ -81,7 +86,6 @@ export default function TripMatchNavbar({
               <img src="/icons/user-dark.svg" alt="" />
             </button>
 
-            {/* Dropdown menu */}
             {open && (
               <div className="tm-menu" role="menu">
                 <button
