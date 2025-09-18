@@ -34,7 +34,7 @@ video {
   --space-2: clamp(12px, 2vw, 24px);
   --space-3: clamp(16px, 3vw, 40px);
   --radius: 14px;
-  --accent: #c06e52;
+  --accent: #8eafb3;
 }
 body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;

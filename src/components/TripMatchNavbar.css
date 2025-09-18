@@ -19,7 +19,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 16px;
-  background: var(--bg);
+  --tm-navbar-bg: #8eafb3;
+  background: var(--tm-navbar-bg) !important;
   color: var(--ink);
   box-sizing: border-box;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -51,14 +52,6 @@
   padding: 0;
   cursor: pointer;
   color: var(--ink);
-}
-.tm-brand-pin {
-  width: 22px;
-  height: 22px;
-}
-.tm-brand-name {
-  font-size: 20px;
-  letter-spacing: 0.2px;
 }
 
 /* ---------- Center buttons ---------- */
@@ -167,4 +160,18 @@
 /* Use APENAS se você trocar o navbar para position: fixed */
 .with-navbar {
   padding-top: var(--nav-h);
+}
+/* === Brand pin: fill navbar height === */
+.tm-navbar .tm-brand {
+  height: var(--nav-h); /* garante referência de 64px */
+}
+
+.tm-navbar .tm-brand .tm-brand-pin {
+  display: block;
+  /* ocupa a altura do navbar com uma folguinha */
+  height: calc(var(--nav-h) - 12px) !important;
+  max-height: calc(var(--nav-h) - 12px) !important;
+  width: auto !important; /* mantém proporção da imagem */
+  object-fit: contain;
+  flex: 0 0 auto;
 }

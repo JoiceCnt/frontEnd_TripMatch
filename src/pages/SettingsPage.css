@@ -1,0 +1,133 @@
+/* src/pages/SettingsPage.css */
+:root {
+  --ink: #1c3739;
+  --line: #dfe6e7;
+  --cta: #94a7a6;
+  --card: #fff;
+}
+html[data-theme="dark"] {
+  --ink: #eaf1f1;
+  --line: #334042;
+  --card: #1b2425;
+  background: #101617;
+  color-scheme: dark;
+}
+
+.tm-settings {
+  min-height: 100dvh;
+  display: grid;
+  place-items: start center;
+  padding: 24px 16px 72px;
+  color: var(--ink);
+}
+.tm-card {
+  width: min(740px, 96vw);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+.tm-title {
+  font-size: 28px;
+  margin: 6px 0 14px;
+}
+
+.tm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.tm-field {
+  display: grid;
+  gap: 6px;
+}
+.tm-field select,
+.tm-field input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: transparent;
+  color: inherit;
+}
+
+.tm-fieldset {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+.tm-check {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-right: 14px;
+}
+.tm-field--inline {
+  display: grid;
+  gap: 6px;
+}
+.tm-radios {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.tm-radio {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tm-pass {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+.tm-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.tm-btn {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff0;
+  cursor: pointer;
+}
+.tm-btn--primary {
+  background: var(--cta);
+  border-color: var(--cta);
+  color: #fff;
+}
+
+/* switch */
+.tm-switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px;
+}
+.tm-switch input {
+  display: none;
+}
+.tm-switch i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: transform 0.2s ease;
+}
+.tm-switch input:checked + i {
+  transform: translateX(20px);
+  background: var(--cta);
+}

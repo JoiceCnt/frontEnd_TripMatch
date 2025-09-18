@@ -11,6 +11,12 @@ import PolicyPage from "./pages/PolicyPage";
 import AboutPage from "./pages/AboutPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import TripsPage from "./pages/TripsPage";
+import Feed from "./pages/Feed";
+import MemberStories from "./pages/MemberStories";
+import Activities from "./pages/Activities";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage.jsx";
 
 import "./App.css"; // garante .tm-app / .tm-main
 
@@ -56,8 +62,16 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/policy" element={<PolicyPage />} />
           <Route path="/about" element={<AboutPage />} />
-          {/* opcional: rota 404 */}
-          {/* <Route path="*" element={<h1 style={{ padding: 24 }}>Not Found</h1>} /> */}
+          <Route path="/trips" element={<TripsPage />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/stories" element={<MemberStories />} />
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="*"
+            element={<h1 style={{ padding: 24 }}>Not Found</h1>}
+          />
         </Routes>
       </main>
 

@@ -43,10 +43,11 @@ export default function TripMatchNavbar({
         onClick={() => navigate("/")}
         aria-label="Home"
       >
-        <img src="/icons/pin-dark.svg" alt="" className="tm-brand-pin" />
-        <span className="tm-brand-name">
-          <strong>Trip</strong>&nbsp;Match
-        </span>
+        <img
+          src="/images/tripmatch-logo.png"
+          alt="Trip Match logo"
+          className="tm-brand-pin"
+        />
       </button>
 
       {/* Center: nav buttons */}
@@ -60,8 +61,8 @@ export default function TripMatchNavbar({
         <NavLink to="/feed" className={linkClass}>
           Feed
         </NavLink>
-        <NavLink to="/itinerary" className={linkClass}>
-          Itinerary
+        <NavLink to="/trips" className={linkClass}>
+          Trips
         </NavLink>
       </nav>
 
