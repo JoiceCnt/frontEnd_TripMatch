@@ -7,6 +7,7 @@
   --accent: #8eafb3;
   --danger: #b45b5b;
   --radius: 12px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .tm-feed {
@@ -27,6 +28,8 @@
 
 .tm-field {
   position: relative;
+  overflow: visible; /* evita cortar ícones / popovers */
+  box-sizing: border-box;
 }
 .tm-field input {
   width: 100%;
@@ -37,6 +40,7 @@
   background: #fff;
   color: var(--ink);
   outline: none;
+  box-sizing: border-box;
 }
 .tm-field.icon input {
   padding-left: 38px;
@@ -49,6 +53,10 @@
   transform: translateY(-50%);
   color: var(--muted);
   display: inline-flex;
+  pointer-events: none;
+}
+.tm-icon svg {
+  display: block;
 }
 .tm-clear {
   position: absolute;
@@ -63,7 +71,58 @@
   color: var(--muted);
 }
 
-/* ===== Buttons ===== */
+/* único campo de data com popover */
+.tm-range {
+}
+.tm-range-display {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  padding: 0 14px 0 38px;
+  cursor: pointer;
+}
+.tm-range-popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  width: min(440px, 92vw);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+  z-index: 10;
+}
+.tm-range-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tm-range-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.tm-range-popover input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 10px;
+}
+.tm-range-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ===== Buttons/links ===== */
 .tm-btn {
   border: 1px solid var(--accent);
   background: var(--accent);
@@ -102,6 +161,15 @@
   color: var(--danger);
 }
 
+.tm-author-link {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
 /* ===== Composer ===== */
 .tm-composer {
   display: grid;
@@ -114,6 +182,7 @@
   padding: 12px;
   margin-bottom: 10px;
 }
+
 .tm-avatar {
   width: 44px;
   height: 44px;
@@ -127,6 +196,21 @@
   height: 32px;
 }
 
+.tm-avatar-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.tm-avatar-btn:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.tm-avatar-btn.sm {
+  width: 32px;
+  height: 32px;
+}
+
 .tm-composer-main textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -136,12 +220,6 @@
   min-height: 56px;
   outline: none;
   color: var(--ink);
-}
-.tm-composer-meta {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
-  gap: 8px;
-  margin-top: 8px;
 }
 
 /* ===== Result bar ===== */
@@ -189,21 +267,6 @@
 }
 .tm-time.small {
   font-size: 11px;
-}
-
-.tm-meta {
-  margin: 8px 0 -2px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.tm-chip {
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--line);
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  color: var(--ink);
 }
 
 .tm-post-text {
@@ -282,19 +345,182 @@
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 720px) {
+@media (max-width: 880px) {
   .tm-filters {
     grid-template-columns: 1fr 1fr;
   }
-  .tm-composer-meta {
-    grid-template-columns: 1fr 1fr;
+  .tm-range-popover {
+    width: min(420px, 96vw);
   }
 }
-@media (max-width: 460px) {
+@media (max-width: 520px) {
   .tm-filters {
     grid-template-columns: 1fr;
   }
   .tm-composer {
     grid-template-columns: 36px 1fr;
   }
+} /* faz o fundo ocupar a tela toda nesta rota */
+body.feed-route {
+  background: var(--bg);
+}
+
+/* container centrado, com padding fluido e sem cortar nada */
+.fullbleed {
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding-inline: clamp(12px, 4vw, 24px);
+  box-sizing: border-box;
+}
+
+/* filtros se reorganizam sozinhos (sem estourar) */
+.tm-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* <- novo */
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* botão Clear com altura dos inputs, não estoura */
+.tm-filters .tm-btn.ghost {
+  height: 40px;
+}
+
+/* evita “corte” de ícones/popovers no container do campo */
+.tm-field {
+  position: relative;
+  overflow: visible;
+}
+
+/* o popover do calendário ancora à DIREITA para nunca sair da tela */
+.tm-range-popover {
+  right: 0; /* <- novo */
+  left: auto; /* <- novo */
+  width: min(440px, 96vw);
+}
+
+/* em telas pequenas, tudo empilha sem cortar */
+@media (max-width: 520px) {
+  .tm-composer {
+    grid-template-columns: 36px 1fr;
+  }
+}
+body.feed-route {
+  background: var(--bg);
+}
+
+.fullbleed {
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding-inline: clamp(12px, 4vw, 24px);
+  box-sizing: border-box;
+}
+
+/* evita corte e ancora o calendário à direita */
+.tm-field {
+  position: relative;
+  overflow: visible;
+}
+.tm-range-popover {
+  right: 0;
+  left: auto;
+  width: min(440px, 96vw);
+} /* ----- tamanhos e tipografia confortáveis ----- */
+:root {
+  --font-base: 16px;
+  --font-sm: 14px;
+  --control-h: 46px; /* altura de inputs/botões */
+}
+
+/* inputs (country/city) e “display” do range com a mesma altura */
+.tm-field input,
+.tm-range-display {
+  height: var(--control-h);
+  font-size: var(--font-base);
+}
+
+/* popover do range: maior e legível */
+.tm-range-popover {
+  right: 0;
+  left: auto;
+  width: min(600px, 96vw); /* ↑ era ~440px */
+  padding: 16px; /* ↑ padding maior */
+  font-size: var(--font-base); /* texto maior */
+  border-radius: 12px;
+}
+
+.tm-range-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tm-range-label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.tm-range-popover input {
+  height: var(--control-h);
+  font-size: var(--font-base);
+  border-radius: 10px;
+  padding: 0 12px;
+}
+
+/* ações do popover: botões visíveis e com largura mínima */
+.tm-range-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tm-btn {
+  font-size: var(--font-sm);
+  padding: 10px 16px;
+  min-width: 96px; /* garante que o texto caiba */
+  border-radius: 999px;
+  border: 1px solid var(--accent, #2e7d7b);
+  background: var(--accent, #2e7d7b); /* fallback se a var não existir */
+  color: #fff;
+}
+
+.tm-btn.primary {
+  border-color: var(--accent, #2e7d7b);
+  background: var(--accent, #2e7d7b);
+  color: #2e7d7b;
+}
+
+.tm-btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+/* aumenta também a altura do botão Clear da barra de filtros */
+.tm-filters .tm-btn.ghost {
+  height: var(--control-h);
+}
+
+/* Botão Clear com o mesmo tamanho/alinhamento dos campos */
+.tm-filters .tm-btn,
+.tm-filters .tm-btn.ghost {
+  height: var(--control-h); /* mesma altura dos inputs */
+  padding: 0 16px;
+  border-radius: 999px;
+  display: inline-flex; /* centraliza o texto verticalmente */
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* evita o texto “subir” */
+  width: 100%; /* opcional: ocupa a coluna inteira como os inputs */
+}
+.tm-filters {
+  align-items: center;
+} /* responsivo: nada cortado */
+.tm-field {
+  overflow: visible;
 }

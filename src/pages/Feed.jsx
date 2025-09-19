@@ -1,25 +1,39 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Feed.css";
 
 /**
- * Full-CRUD Feed (com correção das regras de Hooks)
- * - Busca com ícones (country/city/date)
- * - CRUD de posts e comentários
+ * Feed (search-first)
+ * - Filtros: Country/City (autocomplete), Date range (um único campo)
+ * - Composer: apenas texto
+ * - CRUD local de posts/comentários (troque TODOs por chamadas à API depois)
+ * - Avatar clicável leva a /users/:id
  */
 
 export default function Feed({ currentUser = demoUser }) {
-  const [filters, setFilters] = useState({ country: "", city: "", date: "" });
+  const navigate = useNavigate();
+
+  const [filters, setFilters] = useState({
+    country: "",
+    city: "",
+    startDate: "",
+    endDate: "",
+  });
+
   const [posts, setPosts] = useState(seedPosts);
 
+  // aplica o fundo da rota e padding fluido do container
+  useEffect(() => {
+    document.body.classList.add("feed-route");
+    return () => document.body.classList.remove("feed-route");
+  }, []);
+
   // ---------- CREATE ----------
-  const createPost = (payload) => {
+  const createPost = (text) => {
     const newPost = {
-      id: crypto.randomUUID(),
+      id: uid(),
       author: { ...currentUser },
-      text: payload.text.trim(),
-      country: payload.country.trim(),
-      city: payload.city.trim(),
-      date: payload.date,
+      text: text.trim(),
       likes: 0,
       comments: [],
       createdAt: new Date().toISOString(),
@@ -29,16 +43,30 @@ export default function Feed({ currentUser = demoUser }) {
     setPosts((p) => [newPost, ...p]);
   };
 
-  // ---------- READ (filters) ----------
+  // ---------- READ + FILTER ----------
   const filtered = useMemo(() => {
     const ctry = filters.country.trim().toLowerCase();
     const cty = filters.city.trim().toLowerCase();
-    const fdate = filters.date.trim();
+    const start = filters.startDate ? new Date(filters.startDate) : null;
+    const end = filters.endDate ? new Date(filters.endDate) : null;
+
     return posts.filter((p) => {
-      const okCountry = !ctry || p.country.toLowerCase().includes(ctry);
-      const okCity = !cty || p.city.toLowerCase().includes(cty);
-      const okDate = !fdate || p.date === fdate;
-      return okCountry && okCity && okDate;
+      const okCountry = !ctry || (p.country || "").toLowerCase().includes(ctry);
+      const okCity = !cty || (p.city || "").toLowerCase().includes(cty);
+
+      if (!start && !end) return okCountry && okCity;
+
+      const inRange = (iso) => {
+        const d = new Date(iso);
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        return true;
+      };
+
+      // usa createdAt para filtro por período
+      const dateOk = p.createdAt ? inRange(p.createdAt) : true;
+
+      return okCountry && okCity && dateOk;
     });
   }, [filters, posts]);
 
@@ -79,7 +107,7 @@ export default function Feed({ currentUser = demoUser }) {
               comments: [
                 ...p.comments,
                 {
-                  id: crypto.randomUUID(),
+                  id: uid(),
                   author: { ...currentUser },
                   text: text.trim(),
                   createdAt: new Date().toISOString(),
@@ -125,32 +153,37 @@ export default function Feed({ currentUser = demoUser }) {
     );
   };
 
+  const goProfile = (userId) => navigate(`/users/${userId}`);
+
   return (
-    <div className="tm-feed">
-      {/* -------- Filters with icons -------- */}
+    <div className="tm-feed fullbleed">
+      {/* -------- Filtros -------- */}
       <div className="tm-filters">
-        <InputWithIcon
+        <Autocomplete
           icon="search"
           placeholder="Country"
           value={filters.country}
-          onChange={(v) => setFilters((f) => ({ ...f, country: v }))}
+          onChange={(v) => setFilters((f) => ({ ...f, country: v, city: "" }))}
+          fetchOptions={fetchCountrySuggestions}
         />
-        <InputWithIcon
+        <Autocomplete
           icon="search"
           placeholder="City"
           value={filters.city}
           onChange={(v) => setFilters((f) => ({ ...f, city: v }))}
+          fetchOptions={(q) => fetchCitySuggestions(q, filters.country)}
         />
-        <InputWithIcon
-          icon="calendar"
-          type="date"
-          placeholder="dd / mm / aaaa"
-          value={filters.date}
-          onChange={(v) => setFilters((f) => ({ ...f, date: v }))}
+        <DateRangeField
+          start={filters.startDate}
+          end={filters.endDate}
+          onStart={(v) => setFilters((f) => ({ ...f, startDate: v }))}
+          onEnd={(v) => setFilters((f) => ({ ...f, endDate: v }))}
         />
         <button
           className="tm-btn ghost"
-          onClick={() => setFilters({ country: "", city: "", date: "" })}
+          onClick={() =>
+            setFilters({ country: "", city: "", startDate: "", endDate: "" })
+          }
           aria-label="Clear filters"
           title="Clear filters"
         >
@@ -158,26 +191,28 @@ export default function Feed({ currentUser = demoUser }) {
         </button>
       </div>
 
-      {/* -------- Composer (Create) -------- */}
+      {/* -------- Composer -------- */}
       <PostComposer onSubmit={createPost} currentUser={currentUser} />
 
       <div className="tm-results-bar">
         <span>{filtered.length} post(s)</span>
       </div>
 
-      {/* -------- Posts list -------- */}
+      {/* -------- Lista de posts -------- */}
       <ul className="tm-posts">
         {filtered.map((post) => (
           <PostCard
             key={post.id}
             post={post}
             currentUser={currentUser}
+            onAvatarClick={() => goProfile(post.author.id)}
             onLike={() => likePost(post.id)}
             onUpdate={(patch) => updatePost(post.id, patch)}
             onDelete={() => deletePost(post.id)}
             onAddComment={(text) => addComment(post.id, text)}
             onUpdateComment={(cid, text) => updateComment(post.id, cid, text)}
             onDeleteComment={(cid) => deleteComment(post.id, cid)}
+            onCommentAvatarClick={(uid) => goProfile(uid)}
           />
         ))}
       </ul>
@@ -185,24 +220,42 @@ export default function Feed({ currentUser = demoUser }) {
   );
 }
 
-/* =================== UI Pieces =================== */
+/* =================== Subcomponentes =================== */
 
-function InputWithIcon({ icon, value, onChange, placeholder, type = "text" }) {
+function Autocomplete({ icon, value, onChange, placeholder, fetchOptions }) {
+  const [options, setOptions] = useState([]);
+
+  const handleInput = async (v) => {
+    onChange(v);
+    if (v.trim().length < 2) return setOptions([]);
+    try {
+      const list = await fetchOptions(v.trim());
+      setOptions(list.slice(0, 8));
+    } catch {
+      setOptions([]);
+    }
+  };
+
   return (
     <div className="tm-field icon">
       <span className="tm-icon">
-        {icon === "calendar" ? CalendarIcon() : SearchIcon()}
+        {icon === "calendar" ? <CalendarIcon /> : <SearchIcon />}
       </span>
       <input
-        type={type}
+        list={placeholder}
         value={value}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => handleInput(e.target.value)}
       />
+      <datalist id={placeholder}>
+        {options.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
       {value && (
         <button
           className="tm-clear"
-          onClick={() => onChange("")}
+          onClick={() => handleInput("")}
           aria-label="Clear"
         >
           ×
@@ -212,31 +265,106 @@ function InputWithIcon({ icon, value, onChange, placeholder, type = "text" }) {
   );
 }
 
+/** Campo único que abre popover com início/fim */
+function DateRangeField({ start, end, onStart, onEnd }) {
+  const [open, setOpen] = useState(false);
+  const pop = useRef(null);
+
+  useEffect(() => {
+    function onDocClick(e) {
+      if (!pop.current) return;
+      if (!pop.current.contains(e.target)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  const label =
+    (start ? formatDate(start) : "dd/mm/aaaa") +
+    " — " +
+    (end ? formatDate(end) : "dd/mm/aaaa");
+
+  return (
+    <div className="tm-field icon">
+      <span className="tm-icon">
+        <CalendarIcon />
+      </span>
+      <button
+        type="button"
+        className="tm-range-display"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        title="Select date range"
+      >
+        {label}
+      </button>
+
+      {open && (
+        <div
+          className="tm-range-popover"
+          ref={pop}
+          role="dialog"
+          aria-label="Select dates"
+        >
+          <div className="tm-range-grid">
+            <div>
+              <label className="tm-range-label">Start</label>
+              <input
+                type="date"
+                value={start}
+                onChange={(e) => onStart(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="tm-range-label">End</label>
+              <input
+                type="date"
+                value={end}
+                onChange={(e) => onEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="tm-range-actions">
+            <button
+              className="tm-btn ghost"
+              onClick={() => {
+                onStart("");
+                onEnd("");
+              }}
+            >
+              Clear
+            </button>
+            <button className="tm-btn primary" onClick={() => setOpen(false)}>
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PostComposer({ onSubmit, currentUser }) {
   const [text, setText] = useState("");
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
-  const [date, setDate] = useState("");
-
   const canPost = text.trim().length > 0;
 
   const submit = (e) => {
     e.preventDefault();
     if (!canPost) return;
-    onSubmit({ text, country, city, date });
+    onSubmit(text);
     setText("");
-    setCountry("");
-    setCity("");
-    setDate("");
   };
 
   return (
     <form className="tm-composer" onSubmit={submit}>
-      <img
-        src={currentUser.photo || defaultAvatar}
-        alt="Your profile"
-        className="tm-avatar"
-      />
+      <button type="button" className="tm-avatar-btn" title="Your profile">
+        <img
+          src={currentUser.photo || defaultAvatar}
+          alt="Your profile"
+          className="tm-avatar"
+        />
+      </button>
       <div className="tm-composer-main">
         <textarea
           value={text}
@@ -244,27 +372,6 @@ function PostComposer({ onSubmit, currentUser }) {
           placeholder="Share your plan, invite others, ask for tips..."
           rows={3}
         />
-        <div className="tm-composer-meta">
-          <InputWithIcon
-            icon="search"
-            placeholder="Country"
-            value={country}
-            onChange={setCountry}
-          />
-          <InputWithIcon
-            icon="search"
-            placeholder="City"
-            value={city}
-            onChange={setCity}
-          />
-          <InputWithIcon
-            icon="calendar"
-            type="date"
-            placeholder="dd / mm / aaaa"
-            value={date}
-            onChange={setDate}
-          />
-        </div>
       </div>
       <div className="tm-composer-actions">
         <button type="submit" className="tm-btn" disabled={!canPost}>
@@ -278,12 +385,14 @@ function PostComposer({ onSubmit, currentUser }) {
 function PostCard({
   post,
   currentUser,
+  onAvatarClick,
   onLike,
   onUpdate,
   onDelete,
   onAddComment,
   onUpdateComment,
   onDeleteComment,
+  onCommentAvatarClick,
 }) {
   const isOwner = currentUser?.id === post.author.id;
   const [editing, setEditing] = useState(false);
@@ -299,13 +408,25 @@ function PostCard({
   return (
     <li className="tm-post">
       <div className="tm-post-head">
-        <img
-          src={post.author.photo || defaultAvatar}
-          alt={post.author.name}
-          className="tm-avatar"
-        />
+        <button
+          className="tm-avatar-btn"
+          onClick={onAvatarClick}
+          title="Open profile"
+        >
+          <img
+            src={post.author.photo || defaultAvatar}
+            alt={post.author.name}
+            className="tm-avatar"
+          />
+        </button>
         <div className="tm-author">
-          <strong>{post.author.name}</strong>
+          <button
+            className="tm-author-link"
+            onClick={onAvatarClick}
+            title="Open profile"
+          >
+            <strong>{post.author.name}</strong>
+          </button>
           <span className="tm-time">
             {new Date(post.createdAt).toLocaleString()}
             {post.updatedAt ? " · edited" : ""}
@@ -352,12 +473,6 @@ function PostCard({
         </div>
       </div>
 
-      <div className="tm-meta">
-        {post.country && <span className="tm-chip">🌍 {post.country}</span>}
-        {post.city && <span className="tm-chip">📍 {post.city}</span>}
-        {post.date && <span className="tm-chip">🗓 {post.date}</span>}
-      </div>
-
       {!editing ? (
         <p className="tm-post-text">{post.text}</p>
       ) : (
@@ -390,15 +505,22 @@ function PostCard({
         onAdd={onAddComment}
         onUpdate={onUpdateComment}
         onDelete={onDeleteComment}
+        onAvatarClick={onCommentAvatarClick}
       />
     </li>
   );
 }
 
-/** ---------- Comentários (sem hooks dentro do map!) ---------- */
-function Comments({ comments, currentUser, onAdd, onUpdate, onDelete }) {
+/** Comentários (cada item é um componente — hooks no topo) */
+function Comments({
+  comments,
+  currentUser,
+  onAdd,
+  onUpdate,
+  onDelete,
+  onAvatarClick,
+}) {
   const [text, setText] = useState("");
-
   const submit = (e) => {
     e.preventDefault();
     const trimmed = text.trim();
@@ -413,9 +535,10 @@ function Comments({ comments, currentUser, onAdd, onUpdate, onDelete }) {
         <CommentItem
           key={c.id}
           comment={c}
-          currentUser={currentUser}
+          mine={c.author.id === currentUser.id}
           onUpdate={(newText) => onUpdate(c.id, newText)}
           onDelete={() => onDelete(c.id)}
+          onAvatarClick={() => onAvatarClick(c.author.id)}
         />
       ))}
 
@@ -438,9 +561,7 @@ function Comments({ comments, currentUser, onAdd, onUpdate, onDelete }) {
   );
 }
 
-/** Cada comentário agora é um componente próprio (hooks no topo) */
-function CommentItem({ comment, currentUser, onUpdate, onDelete }) {
-  const mine = comment.author.id === currentUser.id;
+function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(comment.text);
 
@@ -453,14 +574,26 @@ function CommentItem({ comment, currentUser, onUpdate, onDelete }) {
 
   return (
     <div className="tm-comment">
-      <img
-        src={comment.author.photo || defaultAvatar}
-        alt={comment.author.name}
-        className="tm-avatar sm"
-      />
+      <button
+        className="tm-avatar-btn sm"
+        onClick={onAvatarClick}
+        title="Open profile"
+      >
+        <img
+          src={comment.author.photo || defaultAvatar}
+          alt={comment.author.name}
+          className="tm-avatar sm"
+        />
+      </button>
       <div className="tm-comment-body">
         <div className="tm-comment-row">
-          <strong>{comment.author.name}</strong>
+          <button
+            className="tm-author-link"
+            onClick={onAvatarClick}
+            title="Open profile"
+          >
+            <strong>{comment.author.name}</strong>
+          </button>
           {mine && !editing && (
             <div className="tm-comment-ops">
               <button
@@ -521,7 +654,23 @@ function CommentItem({ comment, currentUser, onUpdate, onDelete }) {
   );
 }
 
-/* =================== Ícones (inline) =================== */
+/* =================== Utils e Ícones =================== */
+
+function uid() {
+  // id simples para demo
+  return `id_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+function formatDate(isoOrYYYYMMDD) {
+  const d = new Date(isoOrYYYYMMDD);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 function SearchIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -559,24 +708,45 @@ function CalendarIcon() {
   );
 }
 
+/* =================== Stubs de autocomplete (troque pela API) =================== */
+
+async function fetchCountrySuggestions(q) {
+  const pool = [
+    "Spain",
+    "Portugal",
+    "France",
+    "Italy",
+    "Germany",
+    "Netherlands",
+  ];
+  return pool.filter((x) => x.toLowerCase().includes(q.toLowerCase()));
+}
+async function fetchCitySuggestions(q, country) {
+  const byCountry = {
+    spain: ["Barcelona", "Madrid", "Valencia", "Seville"],
+    portugal: ["Lisbon", "Porto", "Braga"],
+    france: ["Paris", "Lyon", "Marseille"],
+    italy: ["Rome", "Milan", "Florence"],
+    germany: ["Berlin", "Munich", "Hamburg"],
+    netherlands: ["Amsterdam", "Rotterdam", "Utrecht"],
+  };
+  const key = (country || "").toLowerCase();
+  const pool = byCountry[key] || Object.values(byCountry).flat();
+  return pool.filter((x) => x.toLowerCase().includes(q.toLowerCase()));
+}
+
 /* =================== Demo data =================== */
+
 const defaultAvatar =
   "https://raw.githubusercontent.com/feathericons/feather/master/icons/user.svg";
 
-const demoUser = {
-  id: "u1",
-  name: "You",
-  photo: "",
-};
+const demoUser = { id: "u1", name: "You", photo: "" };
 
 const seedPosts = [
   {
     id: "p1",
     author: { id: "u2", name: "Joice Conte", photo: "" },
     text: "Hey, I would like to try this restaurant called La Tosqueta de Blay in Barcelona. Anyone?",
-    country: "Spain",
-    city: "Barcelona",
-    date: "2025-09-28",
     likes: 4,
     comments: [],
     createdAt: "2025-09-18T12:00:00.000Z",
