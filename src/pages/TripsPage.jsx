@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import "./Trips.css";
 
 /* --------- Icons --------- */
@@ -24,6 +24,28 @@ function SectionHeader({ icon, label }) {
 }
 
 export default function TripPage() {
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // --- Llamada a API al montar ---
+  useEffect(() => {
+    fetch("http://localhost:3000/api/trips") // cambia la URL a tu backend real
+      .then((res) => {
+        if (!res.ok) throw new Error("Error fetching trips");
+        return res.json();
+      })
+      .then((data) => {
+        setTrips(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("❌ Error cargando viajes:", err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
   /* ---------- Smooth scroll ---------- */
   const scrollToId = (id) =>
     document
@@ -245,160 +267,178 @@ export default function TripPage() {
     );
   };
 
-  return (
-    <main className="trip-page">
-      {/* --------- TOP TABS --------- */}
-      <div className="section-nav">
-        <button
-          className="tab-btn"
-          onClick={() => scrollToId("section-active")}
-        >
-          <img className="icon-img" src={tripIcon} alt="" aria-hidden />
-          <span>Active trip</span>
-        </button>
-        <button
-          className="tab-btn"
-          onClick={() => scrollToId("section-upcoming")}
-        >
-          <img className="icon-img" src={upcomingIcon} alt="" aria-hidden />
-          <span>Upcoming</span>
-        </button>
-        <button className="tab-btn" onClick={() => scrollToId("section-plan")}>
-          <img className="icon-img" src={planIcon} alt="" aria-hidden />
-          <span>Plan</span>
-        </button>
-      </div>
+ return (
+  <main className="trip-page">
+    {/* --------- TOP TABS --------- */}
+    <div className="section-nav">
+      <button
+        className="tab-btn"
+        onClick={() => scrollToId("section-active")}
+      >
+        <img className="icon-img" src={tripIcon} alt="" aria-hidden />
+        <span>Active trip</span>
+      </button>
+      <button
+        className="tab-btn"
+        onClick={() => scrollToId("section-upcoming")}
+      >
+        <img className="icon-img" src={upcomingIcon} alt="" aria-hidden />
+        <span>Upcoming</span>
+      </button>
+      <button
+        className="tab-btn"
+        onClick={() => scrollToId("section-plan")}
+      >
+        <img className="icon-img" src={planIcon} alt="" aria-hidden />
+        <span>Plan</span>
+      </button>
+    </div>
 
-      {/* ------------ ACTIVE TRIP ------------ */}
-      <section id="section-active" className="trip-section">
-        <SectionHeader icon={tripIcon} label="Active trip" />
-        <TripCard
-          trip={activeTrip}
-          bgImage={bgActive}
-          onPickImage={pickActive}
-          inputRef={inputActiveRef}
-          onFileChange={(e) => onFilePicked(e, setBgActive)}
-        />
-      </section>
+    {/* ------------ ACTIVE TRIP ------------ */}
+    <section id="section-active" className="trip-section">
+      <SectionHeader icon={tripIcon} label="Active trip" />
+      <TripCard
+        trip={activeTrip}
+        bgImage={bgActive}
+        onPickImage={pickActive}
+        inputRef={inputActiveRef}
+        onFileChange={(e) => onFilePicked(e, setBgActive)}
+      />
+    </section>
 
-      {/* ------------ UPCOMING ------------ */}
-      <section id="section-upcoming" className="trip-section">
-        <SectionHeader icon={upcomingIcon} label="Upcoming" />
-        <TripCard
-          trip={upcomingTrip}
-          bgImage={bgUpcoming}
-          onPickImage={pickUpcoming}
-          inputRef={inputUpcomingRef}
-          onFileChange={(e) => onFilePicked(e, setBgUpcoming)}
-        />
-      </section>
+    {/* ------------ UPCOMING ------------ */}
+    <section id="section-upcoming" className="trip-section">
+      <SectionHeader icon={upcomingIcon} label="Upcoming" />
+      <TripCard
+        trip={upcomingTrip}
+        bgImage={bgUpcoming}
+        onPickImage={pickUpcoming}
+        inputRef={inputUpcomingRef}
+        onFileChange={(e) => onFilePicked(e, setBgUpcoming)}
+      />
+    </section>
 
-      {/* ------------ PLAN A NEW TRIP ------------ */}
-      <section id="section-plan" className="trip-section">
-        <SectionHeader icon={planIcon} label="Plan a new trip" />
-        <div className="plan-card">
-          <form className="plan-grid" onSubmit={(e) => e.preventDefault()}>
-            <label className="field">
-              <span>Title</span>
-              <input type="text" placeholder="Trip title" />
-            </label>
-            <label className="field">
-              <span>City</span>
-              <input type="text" placeholder="City" />
-            </label>
-            <label className="field">
-              <span>Country</span>
-              <input type="text" placeholder="Country" />
-            </label>
-            <label className="field">
-              <span>From</span>
-              <input type="date" />
-            </label>
-            <label className="field">
-              <span>To</span>
-              <input type="date" />
-            </label>
+    {/* ------------ PLAN A NEW TRIP ------------ */}
+    <section id="section-plan" className="trip-section">
+      <SectionHeader icon={planIcon} label="Plan a new trip" />
+      <div className="plan-card">
+        <form className="plan-grid" onSubmit={(e) => e.preventDefault()}>
+          <label className="field">
+            <span>Title</span>
+            <input type="text" placeholder="Trip title" />
+          </label>
+          <label className="field">
+            <span>City</span>
+            <input type="text" placeholder="City" />
+          </label>
+          <label className="field">
+            <span>Country</span>
+            <input type="text" placeholder="Country" />
+          </label>
+          <label className="field">
+            <span>From</span>
+            <input type="date" />
+          </label>
+          <label className="field">
+            <span>To</span>
+            <input type="date" />
+          </label>
 
-            <div className="plan-prefs">
-              <div className="panel-title">
-                <span>Preferences</span>
-              </div>
-              <ul className="pref-list">
-                {[
-                  "Nature",
-                  "Concerts & Events",
-                  "Gastronomy",
-                  "Touristic places",
-                ].map((p) => (
+          <div className="plan-prefs">
+            <div className="panel-title">
+              <span>Preferences</span>
+            </div>
+            <ul className="pref-list">
+              {["Nature", "Concerts & Events", "Gastronomy", "Touristic places"].map(
+                (p) => (
                   <li key={p}>
                     <label className="pref-check">
                       <input type="checkbox" />
                       <span>{p}</span>
                     </label>
                   </li>
-                ))}
-              </ul>
-            </div>
+                )
+              )}
+            </ul>
+          </div>
 
-            <div className="plan-actions">
-              <button className="tm-btn" type="submit">
-                <img className="icon-img" src={saveIcon} alt="" aria-hidden />
-                <span>Save</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
+          <div className="plan-actions">
+            <button className="tm-btn" type="submit">
+              <img className="icon-img" src={saveIcon} alt="" aria-hidden />
+              <span>Save</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
 
-      {/* ------------ MODAL SHARE ------------ */}
-      {shareOpen && (
-        <div
-          className="tm-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Share trip"
-        >
-          <div className="tm-modal-card">
-            <div className="tm-modal-head">
-              <h4>Share to feed</h4>
-              <button
-                className="icon-btn"
-                onClick={closeShare}
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="tm-modal-body">
-              <label className="field">
-                <span>Add a comment (optional)</span>
-                <textarea
-                  value={shareComment}
-                  onChange={(e) => setShareComment(e.target.value)}
-                  placeholder="Write something about this trip…"
-                />
-              </label>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={shareIncludePrefs}
-                  onChange={(e) => setShareIncludePrefs(e.target.checked)}
-                />
-                <span>Include Preferences in the post</span>
-              </label>
-            </div>
-            <div className="tm-modal-foot">
-              <button className="tm-btn ghost" onClick={closeShare}>
-                Cancel
-              </button>
-              <button className="tm-btn" onClick={confirmShare}>
-                <img className="icon-img" src={shareIcon} alt="" aria-hidden />
-                <span>Share</span>
-              </button>
-            </div>
+    {/* ------------ MODAL SHARE ------------ */}
+    {shareOpen && (
+      <div
+        className="tm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Share trip"
+      >
+        <div className="tm-modal-card">
+          <div className="tm-modal-head">
+            <h4>Share to feed</h4>
+            <button
+              className="icon-btn"
+              onClick={closeShare}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="tm-modal-body">
+            <label className="field">
+              <span>Add a comment (optional)</span>
+              <textarea
+                value={shareComment}
+                onChange={(e) => setShareComment(e.target.value)}
+                placeholder="Write something about this trip…"
+              />
+            </label>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={shareIncludePrefs}
+                onChange={(e) => setShareIncludePrefs(e.target.checked)}
+              />
+              <span>Include Preferences in the post</span>
+            </label>
+          </div>
+          <div className="tm-modal-foot">
+            <button className="tm-btn ghost" onClick={closeShare}>
+              Cancel
+            </button>
+            <button className="tm-btn" onClick={confirmShare}>
+              <img className="icon-img" src={shareIcon} alt="" aria-hidden />
+              <span>Share</span>
+            </button>
           </div>
         </div>
-      )}
-    </main>
-  );
+      </div>
+    )}
+
+    {/* Loader o error */}
+    {loading && <p>Loading trips...</p>}
+    {error && <p style={{ color: "red" }}>{error}</p>}
+
+    {/* Render dinámico de viajes desde backend */}
+    {trips.map((trip) => (
+      <section key={trip._id} className="trip-section">
+        <h3>{trip.title}</h3>
+        <p>
+          {trip.city}, {trip.country}
+        </p>
+        <p>
+          From {trip.startDate} to {trip.endDate}
+        </p>
+        {/* Aquí podrías usar <TripCard trip={trip} /> también */}
+      </section>
+    ))}
+  </main>
+);
 }

@@ -24,19 +24,34 @@ export default function SettingsPage() {
   const [newPwd2, setNewPwd2] = useState("");
 
   // Hydrate from localStorage (simples; troque por GET /api/users/me/settings)
-  useEffect(() => {
-    const theme = localStorage.getItem("theme") || "light";
-    setDark(theme === "dark");
-    document.documentElement.dataset.theme = theme;
+   useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("http://localhost:3000/api/users/me/settings", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"), // si usas JWT
+          },
+        });
+        if (!res.ok) throw new Error("Error loading settings");
+        const data = await res.json();
 
-    setLang(localStorage.getItem("lang") || "en");
-    setEmailNotif(JSON.parse(localStorage.getItem("emailNotif") ?? "true"));
-    setInAppNotif(JSON.parse(localStorage.getItem("inAppNotif") ?? "true"));
-    setIsPublicProfile(
-      JSON.parse(localStorage.getItem("isPublicProfile") ?? "true")
-    );
-    setPostVisibility(localStorage.getItem("postVisibility") || "everyone");
-    setTwoFA(JSON.parse(localStorage.getItem("twoFA") ?? "false"));
+        setDark(data.theme === "dark");
+        document.documentElement.dataset.theme = data.theme || "light";
+
+        setLang(data.lang || "en");
+        setEmailNotif(data.emailNotif ?? true);
+        setInAppNotif(data.inAppNotif ?? true);
+        setIsPublicProfile(data.isPublicProfile ?? true);
+        setPostVisibility(data.postVisibility || "everyone");
+        setTwoFA(data.twoFA ?? false);
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      }
+    }
+
+    loadSettings();
   }, []);
 
   // Apply theme immediately
@@ -46,15 +61,34 @@ export default function SettingsPage() {
     localStorage.setItem("theme", value);
   }, [dark]);
 
-  function saveSettings() {
-    // TODO: enviar para backend (PUT /api/users/me/settings)
-    localStorage.setItem("lang", lang);
-    localStorage.setItem("emailNotif", JSON.stringify(emailNotif));
-    localStorage.setItem("inAppNotif", JSON.stringify(inAppNotif));
-    localStorage.setItem("isPublicProfile", JSON.stringify(isPublicProfile));
-    localStorage.setItem("postVisibility", postVisibility);
-    localStorage.setItem("twoFA", JSON.stringify(twoFA));
-    alert("Settings saved!");
+  async function saveSettings() {
+    try {
+      const body = {
+        theme: dark ? "dark" : "light",
+        lang,
+        emailNotif,
+        inAppNotif,
+        isPublicProfile,
+        postVisibility,
+        twoFA,
+      };
+
+      const res = await fetch("http://localhost:3000/api/users/me/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Failed to save settings");
+
+      alert("Settings saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save settings.");
+    }
   }
 
   async function changePassword(e) {
@@ -64,11 +98,21 @@ export default function SettingsPage() {
       return;
     }
     try {
-      // TODO: await fetch("/api/users/me/password", { method:"PUT", headers:{...}, body:JSON.stringify({currPwd,newPwd}) })
+       const res = await fetch("http://localhost:3000/api/users/me/password", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify({ currPwd, newPwd }),
+      });
+
+      if (!res.ok) throw new Error("Failed to change password");
+
       setCurrPwd("");
       setNewPwd("");
       setNewPwd2("");
-      alert("Password changed! (mock)");
+      alert("Password changed!");
     } catch (err) {
       console.error(err);
       alert("Failed to change password.");

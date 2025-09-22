@@ -23,15 +23,36 @@ export default function ProfilePage() {
   });
   const [favoriteCities, setFavoriteCities] = useState("");
 
-  // Example: hydrate from API/localStorage
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // --- 1. Obtener datos del usuario al montar ---
   useEffect(() => {
-    // TODO: fetch("/api/users/me") and set state with the response
-    // For now, try to load a saved theme/photo from localStorage (optional)
-    const saved = JSON.parse(localStorage.getItem("profileDraft") || "{}");
-    if (saved.name) setName(saved.name);
-    if (saved.bio) setBio(saved.bio);
-    if (saved.preferences) setPreferences(saved.preferences);
-    if (saved.favoriteCities) setFavoriteCities(saved.favoriteCities);
+    async function fetchProfile() {
+      try {
+        const res = await fetch("http://localhost:3000/api/users/me", {
+          credentials: "include", // si usas cookies/sesión
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error("Error fetching profile");
+        const data = await res.json();
+
+        // Rellenamos los estados
+        setName(data.name || "");
+        setBio(data.bio || "");
+        setPreferences(data.preferences || {});
+        setFavoriteCities(data.favoriteCities || "");
+        if (data.photoUrl) setPhotoPreview(data.photoUrl);
+
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Error cargando perfil:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
   }, []);
 
   // Handle photo file selection + preview
@@ -64,21 +85,26 @@ export default function ProfilePage() {
     if (photoFile) formData.append("photo", photoFile);
 
     try {
-      // TODO: replace with your real endpoint + auth header
-      // const res = await fetch("/api/users/me", { method: "PUT", body: formData });
-      // const data = await res.json();
+        const res = await fetch("http://localhost:3000/api/users/me", {
+        method: "PUT",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to save profile");
 
-      // Mock success: also keep a draft locally
-      localStorage.setItem(
-        "profileDraft",
-        JSON.stringify({ name, bio, preferences, favoriteCities })
-      );
-      alert("Profile saved! (mock)");
+      const data = await res.json();
+      alert("✅ Profile saved!");
+
+      // opcional: refrescar el preview desde backend
+      if (data.photoUrl) setPhotoPreview(data.photoUrl);
     } catch (err) {
-      console.error(err);
-      alert("Failed to save profile.");
+      console.error("❌ Error guardando perfil:", err);
+      alert("Failed to savev profile.");
     }
   }
+
+  if (loading) return <p>Loading profile...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main className="tm-profile">
