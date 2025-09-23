@@ -27,7 +27,7 @@ export default function SettingsPage() {
    useEffect(() => {
     async function loadSettings() {
       try {
-        const res = await fetch("http://localhost:3000/api/users/me/settings", {
+        const res = await fetch("http://localhost:5005/api/users/me/settings", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -30,7 +30,7 @@ export default function TripPage() {
 
   // --- Llamada a API al montar ---
   useEffect(() => {
-    fetch("http://localhost:3000/api/trips") // cambia la URL a tu backend real
+    fetch("http://localhost:5005/api/trips")
       .then((res) => {
         if (!res.ok) throw new Error("Error fetching trips");
         return res.json();

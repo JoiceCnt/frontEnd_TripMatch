@@ -30,7 +30,7 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch("http://localhost:3000/api/users/me", {
+        const res = await fetch("http://localhost:5005/api/users/me", {
           credentials: "include", // si usas cookies/sesión
           headers: { "Content-Type": "application/json" },
         });
