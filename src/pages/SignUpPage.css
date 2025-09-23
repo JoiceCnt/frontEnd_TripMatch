@@ -128,7 +128,7 @@
   display: block;
   width: 320px;
   max-width: 100%;
-  margin: 18px auto 0;
+  margin: 30px auto 0;
   padding: 14px 18px;
   font-size: 24px;
   border: none;
@@ -136,13 +136,13 @@
   background: var(--cta);
   color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 8px 0 var(--cta-shadow);
+  box-shadow: 0 3px 0 var(--cta-shadow);
   transition: transform 0.05s ease-in-out, box-shadow 0.05s ease-in-out,
     opacity 0.15s;
 }
 .tm-cta:active {
   transform: translateY(2px);
-  box-shadow: 0 6px 0 var(--cta-shadow);
+  box-shadow: 0 3px 0 var(--cta-shadow);
 }
 .tm-cta:hover {
   opacity: 0.95;

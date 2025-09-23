@@ -1,0 +1,231 @@
+/* ---------- Tokens (iguais ao Sign Up) ---------- */
+:root {
+  --ink: #1c3739;
+  --outline: #87aeb0;
+  --accent: #6a8b8d;
+  --cta: #94a7a6;
+  --cta-shadow: #708887;
+}
+
+/* ---------- Shell da página ---------- */
+.tm-profile {
+  min-height: 100dvh;
+  display: grid;
+  place-items: start center;
+  padding-top: 48px; /* reserva espaço p/ navbar fixa */
+  background: #fff;
+  color: var(--ink);
+}
+
+/* Card central */
+.tm-card {
+  width: min(720px, 92vw); /* um pouco mais largo que o Sign Up */
+  padding: 16px 20px 28px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* Título */
+.tm-title {
+  text-align: center;
+  font-size: 44px;
+  font-weight: 500;
+  margin: 10px 0 18px 0;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+
+/* ---------- Form ---------- */
+.tm-form {
+  display: grid;
+  gap: 16px;
+}
+
+/* Campo genérico (label + input/textarea) */
+.tm-field {
+  display: grid;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.tm-field > span {
+  font-size: 16px;
+  color: var(--ink);
+}
+
+/* Inputs & Textareas no mesmo estilo do Sign Up */
+.tm-field input,
+.tm-field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--outline);
+  border-radius: 12px;
+  outline: none;
+  font-size: 18px;
+  color: var(--ink);
+  background: #f7fbfb;
+  resize: vertical;
+}
+
+.tm-field input::placeholder,
+.tm-field textarea::placeholder {
+  color: #6a8b8d;
+  opacity: 1;
+}
+
+.tm-field input:focus,
+.tm-field textarea:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+}
+
+/* ---------- Foto de perfil ---------- */
+.tm-photo {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.tm-photo__preview {
+  width: 160px;
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--outline);
+  border-radius: 12px;
+  background: #f7fbfb;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.tm-photo__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tm-photo__placeholder {
+  font-size: 14px;
+  color: #6a8b8d;
+}
+
+.tm-photo__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- Botões ---------- */
+.tm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: #eef5f5;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.05s ease-in-out, box-shadow 0.05s ease-in-out,
+    opacity 0.15s;
+}
+
+.tm-btn:active {
+  transform: translateY(1px);
+}
+
+.tm-btn:hover {
+  opacity: 0.95;
+}
+
+/* Primário = mesmo CTA do Sign Up */
+.tm-btn--primary {
+  background: var(--cta);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--cta-shadow);
+  border-color: transparent;
+}
+
+.tm-btn--primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 var(--cta-shadow);
+}
+
+/* Fantasma */
+.tm-btn--ghost {
+  background: transparent;
+  border-color: var(--outline);
+  color: var(--ink);
+}
+
+/* Área de ações (Save profile) */
+.tm-actions {
+  display: grid;
+  place-items: center;
+  margin-top: 8px;
+}
+
+/* ---------- Fieldset de preferências ---------- */
+.tm-fieldset {
+  border: none;
+  padding: 0;
+  margin: 4px 0 2px;
+}
+
+.tm-fieldset > legend {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+
+/* Checkboxes */
+.tm-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  line-height: 1.35;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tm-check input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  accent-color: var(--accent);
+}
+
+/* Força accent caso algo sobrescreva */
+.tm-check input[type="checkbox"],
+input[type="checkbox"] {
+  accent-color: #6a8b8d !important;
+}
+
+/* Acessibilidade foco visível */
+.tm-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid #6a8b8d;
+  outline-offset: 2px;
+}
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 720px) {
+  .tm-photo {
+    grid-template-columns: 1fr;
+  }
+  .tm-photo__preview {
+    width: 200px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .tm-title {
+    font-size: 38px;
+  }
+  .tm-btn {
+    width: 100%;
+  }
+}

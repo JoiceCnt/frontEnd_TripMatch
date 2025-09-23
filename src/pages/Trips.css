@@ -35,6 +35,7 @@
   background: var(--header);
   color: var(--ink);
   border: 4px;
+  border-color: #8baaad;
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
@@ -54,7 +55,7 @@
   background-position: center;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .trip-card-fade {
@@ -106,7 +107,8 @@
   border-radius: 999px;
   border: 2px solid var(--line);
   background: #fff;
-  color: var(--ink);
+  color: var(--ink) !important; /* força texto escuro */
+  border-color: var(--line);
   cursor: pointer;
 }
 .tm-btn:hover {
@@ -389,6 +391,8 @@ html {
 .trip-hero-right {
   position: relative;
   z-index: 1;
+  color: var(--ink) !important;
+  border-color: var(--line);
 }
 
 /* Título + meta */
@@ -440,4 +444,12 @@ html {
   .trip-details {
     grid-template-columns: 1fr;
   }
+}
+/* Ícones (svg/img) herdam a cor do texto do botão */
+.tm-btn svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+.tm-btn .icon-img {
+  filter: none; /* evita “branqueamento” via filter */
 }
