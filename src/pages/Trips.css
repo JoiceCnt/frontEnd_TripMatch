@@ -23,7 +23,9 @@
 
 /* ---------- Bloco de sessão ---------- */
 .trip-section {
-  margin: 16px 0 28px;
+  display: flex; /* se já for flex, mantenha */
+  flex-direction: column; /* chave: um embaixo do outro */
+  align-items: stretch; /* filhos com largura total */
 }
 
 .trip-section-header {
@@ -36,6 +38,9 @@
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
+  padding-left: 12px; /* use o mesmo padding horizontal do .trip-card */
+  padding-right: 12px; /* ajuste os números conforme seu CSS */
+  margin-bottom: 8px;
 }
 
 /* ---------- Card principal ---------- */
@@ -47,6 +52,9 @@
   background: var(--card-bg);
   background-size: cover;
   background-position: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
 }
 
 .trip-card-fade {
