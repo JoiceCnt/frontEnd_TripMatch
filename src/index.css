@@ -1,19 +1,19 @@
-/* reset básico */
-*,
-*::before,
+**::before,
 *::after {
   box-sizing: border-box;
 }
-/* aplique na sua <main> ou wrapper das páginas */
+
 .page {
   padding-top: calc(var(--nav-h) + var(--gap));
 }
 :root {
   --nav-h: clamp(56px, 8vw, 72px);
-}
-:root {
+  --font-sans: "Gafata", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+    Cantarell, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
   --nav-h: clamp(56px, 8vw, 72px);
 }
+
 html,
 body {
   margin: 0;
@@ -37,7 +37,7 @@ video {
   --accent: #8eafb3;
 }
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: "Gafata", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
   line-height: 1.5;
   color: #222;
 }

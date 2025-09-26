@@ -13,18 +13,16 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import TripsPage from "./pages/TripsPage";
 import Feed from "./pages/Feed";
-import MemberStories from "./pages/MemberStories";
 import Activities from "./pages/Activities";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage.jsx";
 
-import "./App.css"; // garante .tm-app / .tm-main
+import "./App.css";
 
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // auth (simples; troque pelo seu fluxo real depois)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState({ photo: "" });
 
@@ -33,7 +31,7 @@ export default function App() {
   const handleLogin = (userData) => {
     setIsLoggedIn(true);
     setUser(userData || { photo: "" });
-    navigate("/"); // opcional
+    navigate("/");
   };
 
   const handleLogout = () => {
@@ -44,7 +42,6 @@ export default function App() {
 
   return (
     <div className="tm-app">
-      {/* NAVBAR fixo no topo */}
       <TripMatchNavbar
         variant={isHome ? "home" : "internal"}
         isLoggedIn={isLoggedIn}
@@ -53,7 +50,6 @@ export default function App() {
         avatarUrl={user?.photo}
       />
 
-      {/* CONTEÚDO – empurra o footer para baixo */}
       <main className="tm-main">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -64,7 +60,6 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/trips" element={<TripsPage />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/stories" element={<MemberStories />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -74,8 +69,6 @@ export default function App() {
           />
         </Routes>
       </main>
-
-      {/* FOOTER (remova se não usar) */}
       <TripMatchFooter />
     </div>
   );
