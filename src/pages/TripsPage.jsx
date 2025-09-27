@@ -1,6 +1,7 @@
 // src/pages/TripPage.jsx
 import { useMemo, useRef, useState } from "react";
 import "./Trips.css";
+import axios from "axios";
 
 /* --------- Icons --------- */
 import tripIcon from "../assets/Iconos/trip.png";
@@ -311,10 +312,10 @@ function TripCard({
           </div>
           <ul className="pref-list">
             {[
-              "Nature",
-              "Concerts & Events",
-              "Gastronomy",
-              "Touristic places",
+              "nature",
+              "concerts & Events",
+              "gastronomy",
+              "touristic places",
             ].map((p) => (
               <li key={p}>
                 {editing ? (
@@ -424,7 +425,7 @@ function TripCard({
 }
 
 /* ===================== Page ===================== */
-export default function TripPage() {
+export default function TripPage({ user }) {
   const scrollToId = (id) =>
     document
       .getElementById(id)
@@ -529,12 +530,22 @@ export default function TripPage() {
     setTrips((prev) => prev.filter((t) => t.id !== id));
     // TODO: await fetch(`/api/trips/${id}`, { method: 'DELETE' })
   };
-  const addTrip = (payload) => {
-    const id = `t_${Date.now().toString(36)}_${Math.random()
-      .toString(36)
-      .slice(2, 6)}`;
-    const newTrip = { id, ...payload };
-    setTrips((prev) => [newTrip, ...prev]);
+  const addTrip = async (payload) => {
+    // const id = `t_${Date.now().toString(36)}_${Math.random()
+    //  .toString(36)
+    // .slice(2, 6)}`;
+    //const newTrip = { id, ...payload };
+    try {
+      const response = await axios.post(
+        "http://localhost:5005/api/trips",
+        payload
+      );
+      console.log(response);
+      setTrips((prev) => [response.data, ...prev]);
+    } catch (error) {
+      console.log(error);
+    }
+
     // TODO: await fetch('/api/trips', { method: 'POST', body: JSON.stringify(newTrip) })
   };
 
@@ -604,6 +615,7 @@ export default function TripPage() {
       preferences: Array.from(form.prefs),
       activities: [],
       documents: [],
+      createdBy: user.id,
     };
     addTrip(payload);
     // reset

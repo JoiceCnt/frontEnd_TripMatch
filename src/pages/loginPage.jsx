@@ -44,9 +44,10 @@ export default function LoginPage({ onLogin }) {
       // const data = await res.json();
       // if (!res.ok) return setError(data?.message || "Invalid email or password.");
 
-      onLogin?.({ email: form.email, remember: form.remember }); // notify parent/app
-    } catch {
+      onLogin(form); // notify parent/app
+    } catch (err) {
       setError("Network error. Please try again.");
+      console.log(err);
     } finally {
       setLoading(false);
     }

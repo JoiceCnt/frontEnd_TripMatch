@@ -4,7 +4,6 @@ import "./Feed.css";
 
 import likeIcon from "../assets/Iconos/Like.png";
 import comentIcon from "../assets/Iconos/Comment.png";
-/* Date range picker lib (not Tailwind) */
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";

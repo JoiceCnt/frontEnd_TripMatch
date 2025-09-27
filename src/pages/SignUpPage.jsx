@@ -1,6 +1,7 @@
 // src/pages/SignUpPage.jsx
 import { useState } from "react";
 import "./SignUpPage.css"; // Namespaced stylesheet
+import axios from "axios";
 
 export default function SignUpPage({ onSubmitForm }) {
   // Campos do formulário (inclui os do ProfilePage)
@@ -123,7 +124,11 @@ export default function SignUpPage({ onSubmitForm }) {
         ...form,
         hasPhoto: Boolean(photoFile),
       });
-
+      const response = await axios.post(
+        "http://localhost:5005/api/auth/register",
+        form
+      );
+      console.log(response);
       setSuccess("Account created successfully!");
 
       // (Opcional) Resetar formulário
@@ -135,6 +140,7 @@ export default function SignUpPage({ onSubmitForm }) {
       // setPhotoFile(null);
       // setPhotoPreview("");
     } catch (err) {
+      console.log(err);
       setError(err?.message || "Something went wrong.");
     }
   };

@@ -38,6 +38,7 @@
 /* aceita tanto .filter-* quanto .input-* nomes antigos */
 :is(.filter-wrap, .input-wrap) {
   position: relative;
+  width: 100px; /* largura dos botoes */
 }
 
 /* Base visual idêntico para todos os pills/inputs */
@@ -68,6 +69,7 @@
   color: var(--brand);
   opacity: 0.95;
   pointer-events: none;
+  background: transparent;
 }
 
 /* Campo de texto dentro da pill (Country/City) */
@@ -208,6 +210,7 @@
 .composer-label {
   font-weight: 600;
   font-family: var(--font);
+  align-items: center;
 }
 .post-time {
   font-size: 12px;
@@ -238,21 +241,29 @@
   padding: 16px;
   display: grid;
   gap: 12px;
-  place-items: center;
+  justify-items: center;
+  grid-template-columns: 1fr;
+}
+.composer-form > * {
+  width: min(100%, 720px); /* limite comum */
+  max-width: 100%; /* não passa do form */
+  min-width: 0; /* evita overflow por conteúdo longo */
 }
 .composer-textarea {
-  width: 80%;
+  width: 100%;
+  max-width: 100%;
   border-radius: 12px;
   border: 1px solid var(--card-border);
-  padding: 2px;
+  padding: 12px;
   resize: vertical;
   outline: none;
   font-family: var(--font);
 }
 .composer-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 8px;
+  width: min(100%, 720px); /* redundante, mas explícito */
 }
 
 .inline-comment {
@@ -267,4 +278,8 @@
 /* ===== Wrapper de data ===== */
 .date-wrap {
   position: relative;
+}
+.container-800 {
+  width: min(800px, 92%);
+  margin: 20px auto;
 }
