@@ -1,5 +1,5 @@
 // src/pages/TripPage.jsx
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./Trips.css";
 import axios from "axios";
 
@@ -9,15 +9,12 @@ import upcomingIcon from "../assets/Iconos/upcoming.png";
 import planIcon from "../assets/Iconos/plan.png";
 import uploadIcon from "../assets/Iconos/upload.png";
 import shareIcon from "../assets/Iconos/share.png";
-import addIcon from "../assets/Iconos/add.png";
-import downloadIcon from "../assets/Iconos/download.png";
 import editIcon from "../assets/Iconos/edit.png";
 import deleteIcon from "../assets/Iconos/delete.png";
 import saveIcon from "../assets/Iconos/save.png";
 import pastIcon from "../assets/Iconos/past.png";
 
 /* ===================== Date utils ===================== */
-// Accepts "DD/MM/YYYY" or "YYYY-MM-DD"
 function parseDateInput(x) {
   if (x instanceof Date) return x;
   if (typeof x === "string") {
@@ -27,14 +24,10 @@ function parseDateInput(x) {
   }
   return new Date(x);
 }
-
-// Normalize to local date-only
 const dateOnly = (x) => {
   const d = parseDateInput(x);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 };
-
-// Status: upcoming / active / past
 function getTripStatus(trip) {
   const s = dateOnly(trip.startDate);
   const e = dateOnly(trip.endDate || trip.startDate);
@@ -43,17 +36,15 @@ function getTripStatus(trip) {
   if (today > e) return "past";
   return "active";
 }
-
-// Helpers
 const toISOInput = (d) => {
   const x = parseDateInput(d);
   const mm = String(x.getMonth() + 1).padStart(2, "0");
   const dd = String(x.getDate()).padStart(2, "0");
   return `${x.getFullYear()}-${mm}-${dd}`;
 };
-const fromDateInput = (value) => value; // keep as 'YYYY-MM-DD' for simplicity
+const fromDateInput = (value) => value;
 
-/* ===================== UI ===================== */
+/* ===================== UI helpers ===================== */
 function SectionHeader({ icon, label, right }) {
   return (
     <div className="trip-section-header">
@@ -66,27 +57,14 @@ function SectionHeader({ icon, label, right }) {
   );
 }
 
-/* Trip card with internal draft state for editing */
-function TripCard({
-  trip,
-  onShare,
-  onSaveChanges, // (id, payload)
-  onDeleteTrip, // (id)
-  onAddDoc, // (id, docName)
-  onDeleteDoc, // (id, docIndex)
-  onRenameDoc, // (id, docIndex, newName)
-}) {
+/* ============= TripCard (sem documentos) ============= */
+function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
   const [bgImage, setBgImage] = useState(null);
   const inputRef = useRef(null);
 
-  // Edit mode
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(trip);
-
-  // Keep draft in sync if trip changes from parent
-  // (useful when you plug a backend and list updates externally)
-  // eslint-disable-next-line
-  const refreshDraft = () => setDraft(trip);
+  useEffect(() => setDraft(trip), [trip]);
 
   const pickImage = () => inputRef.current?.click();
   const onFileChange = (e) => {
@@ -105,9 +83,6 @@ function TripCard({
     setDraft({ ...draft, preferences: prefs });
   };
 
-  const [renamingDoc, setRenamingDoc] = useState(null);
-  const [newDocName, setNewDocName] = useState("");
-
   const confirmSave = () => {
     onSaveChanges(trip.id, {
       title: draft.title?.trim() || "Untitled trip",
@@ -117,11 +92,9 @@ function TripCard({
       endDate: draft.endDate || draft.startDate,
       preferences: draft.preferences || [],
       activities: draft.activities || [],
-      documents: draft.documents || [],
     });
     setEditing(false);
   };
-
   const cancelEdit = () => {
     setDraft(trip);
     setEditing(false);
@@ -205,11 +178,7 @@ function TripCard({
         </div>
 
         <div className="trip-hero-right">
-          <button
-            className="tm-btn ghost"
-            onClick={pickImage}
-            title="Upload background image"
-          >
+          <button className="tm-btn ghost" onClick={pickImage} title="Upload">
             <img className="icon-img" src={uploadIcon} alt="" aria-hidden />
             <span>Upload image</span>
           </button>
@@ -265,7 +234,7 @@ function TripCard({
         </div>
       </div>
 
-      {/* Details */}
+      {/* DETAILS */}
       <div className="trip-details">
         <div className="activities">
           <div className="panel-title">
@@ -277,7 +246,7 @@ function TripCard({
             <div className="activity-list">
               {trip.activities?.map((a, i) => (
                 <div className="activity-item" key={i}>
-                  {a}
+                  {a.title}
                 </div>
               ))}
               {!trip.activities?.length && (
@@ -338,98 +307,15 @@ function TripCard({
           </ul>
         </div>
       </div>
-
-      {/* Documents */}
-      <div className="trip-docs">
-        <div className="doc-actions">
-          <button className="chip">
-            <img className="icon-img" src={downloadIcon} alt="" aria-hidden />
-            <span>Outbound</span>
-          </button>
-          <button className="chip">
-            <img className="icon-img" src={downloadIcon} alt="" aria-hidden />
-            <span>Return</span>
-          </button>
-        </div>
-
-        <div className="doc-list">
-          {(trip.documents || []).map((d, i) => (
-            <div className="doc-item" key={i}>
-              <img className="icon-img" src={downloadIcon} alt="" />
-              {renamingDoc === i && editing ? (
-                <input
-                  className="doc-input"
-                  value={newDocName}
-                  onChange={(e) => setNewDocName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const name = newDocName.trim();
-                      if (name) onRenameDoc(trip.id, i, name);
-                      setRenamingDoc(null);
-                      setNewDocName("");
-                    } else if (e.key === "Escape") {
-                      setRenamingDoc(null);
-                      setNewDocName("");
-                    }
-                  }}
-                  autoFocus
-                />
-              ) : (
-                <span className="doc-name">{d}</span>
-              )}
-
-              <div className="doc-cta">
-                {editing ? (
-                  <>
-                    {renamingDoc === i ? null : (
-                      <button
-                        className="icon-only"
-                        title="Rename"
-                        onClick={() => {
-                          setRenamingDoc(i);
-                          setNewDocName(d);
-                        }}
-                      >
-                        <img className="icon-img" src={editIcon} alt="" />
-                      </button>
-                    )}
-                    <button
-                      className="icon-only"
-                      title="Delete"
-                      onClick={() => onDeleteDoc(trip.id, i)}
-                    >
-                      <img className="icon-img" src={deleteIcon} alt="" />
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          ))}
-
-          {editing ? (
-            <button
-              className="chip ghost"
-              onClick={() => {
-                const name = prompt("Document name (e.g. Tickets.pdf):");
-                if (name && name.trim()) onAddDoc(trip.id, name.trim());
-              }}
-            >
-              <img className="icon-img" src={addIcon} alt="" aria-hidden />
-              <span>Add a new document</span>
-            </button>
-          ) : null}
-        </div>
-      </div>
     </div>
   );
 }
 
 /* ===================== Page ===================== */
-export default function TripPage({ user }) {
-  const scrollToId = (id) =>
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+export default function TripPage({ user = { id: "me" } }) {
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   /* Share modal */
   const [shareOpen, setShareOpen] = useState(false);
@@ -437,147 +323,41 @@ export default function TripPage({ user }) {
   const [shareComment, setShareComment] = useState("");
   const [shareIncludePrefs, setShareIncludePrefs] = useState(true);
 
-  const openShare = (trip) => {
-    setShareTrip(trip);
-    setShareOpen(true);
-  };
-  const closeShare = () => setShareOpen(false);
-  const confirmShare = () => {
-    // TODO: POST /api/feed with trip summary
-    console.log("SHARE ▶", {
-      trip: shareTrip,
-      comment: shareComment.trim(),
-      includePreferences: shareIncludePrefs,
-    });
-    setShareComment("");
-    setShareIncludePrefs(true);
-    setShareOpen(false);
-  };
+  useEffect(() => {
+    fetch("http://localhost:5005/api/trips")
+      .then((res) => res.json())
+      .then((data) => setTrips(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  /* Trips state (editable) */
-  const [trips, setTrips] = useState([
-    {
-      id: "t1",
-      title: "Barcelona Getaway",
-      city: "Barcelona",
-      country: "Spain",
-      startDate: "2025-09-19",
-      endDate: "2025-09-22",
-      preferences: [
-        "Nature",
-        "Concerts & Events",
-        "Gastronomy",
-        "Touristic places",
-      ],
-      activities: [
-        "2025-09-19 15:00 Sagrada Família",
-        "2025-09-20 12:00 Park Güell",
-        "2025-09-20 18:00 La Boqueria",
-        "2025-09-20 16:00 Casa Batlló",
-      ],
-      documents: [
-        "Sagrada Familia tickets.pdf",
-        "Park Güell tickets.pdf",
-        "Casa Batlló tickets.pdf",
-      ],
-    },
-    {
-      id: "t2",
-      title: "Beautiful Rome",
-      city: "Rome",
-      country: "Italy",
-      startDate: "2025-10-22",
-      endDate: "2025-10-28",
-      preferences: [
-        "Nature",
-        "Concerts & Events",
-        "Gastronomy",
-        "Touristic places",
-      ],
-      activities: [
-        "2025-10-22 15:00 Flight",
-        "2025-10-23 10:30 Colosseum",
-        "2025-10-28 16:00 Flight return",
-      ],
-      documents: ["Colosseum tickets.pdf"],
-    },
-    {
-      id: "t3",
-      title: "Lisbon Weekend",
-      city: "Lisbon",
-      country: "Portugal",
-      startDate: "2025-04-10",
-      endDate: "2025-04-12",
-      preferences: ["Gastronomy", "Touristic places"],
-      activities: [
-        "2025-04-11 11:00 Tram 28",
-        "2025-04-11 18:00 Time Out Market",
-      ],
-      documents: [],
-    },
-  ]);
-
-  /* CRUD handlers (use these to plug your API later) */
   const updateTrip = (id, payload) => {
     setTrips((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...payload } : t))
     );
-    // TODO: await fetch(`/api/trips/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
+    // TODO: PATCH /api/trips/:id
   };
+
   const deleteTrip = (id) => {
     const ok = confirm("Delete this trip?");
     if (!ok) return;
     setTrips((prev) => prev.filter((t) => t.id !== id));
-    // TODO: await fetch(`/api/trips/${id}`, { method: 'DELETE' })
+    // TODO: DELETE /api/trips/:id
   };
+
   const addTrip = async (payload) => {
-    // const id = `t_${Date.now().toString(36)}_${Math.random()
-    //  .toString(36)
-    // .slice(2, 6)}`;
-    //const newTrip = { id, ...payload };
     try {
       const response = await axios.post(
         "http://localhost:5005/api/trips",
         payload
       );
-      console.log(response);
       setTrips((prev) => [response.data, ...prev]);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create trip");
     }
-
-    // TODO: await fetch('/api/trips', { method: 'POST', body: JSON.stringify(newTrip) })
   };
 
-  // Docs
-  const addDoc = (id, name) => {
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, documents: [...(t.documents || []), name] } : t
-      )
-    );
-  };
-  const deleteDoc = (id, index) => {
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? { ...t, documents: t.documents.filter((_, i) => i !== index) }
-          : t
-      )
-    );
-  };
-  const renameDoc = (id, index, name) => {
-    setTrips((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        const docs = [...(t.documents || [])];
-        docs[index] = name;
-        return { ...t, documents: docs };
-      })
-    );
-  };
-
-  /* Status partitions */
   const activeTrips = useMemo(
     () => trips.filter((t) => getTripStatus(t) === "active"),
     [trips]
@@ -591,10 +371,9 @@ export default function TripPage({ user }) {
     [trips]
   );
 
-  /* Collapsible past */
   const [pastCollapsed, setPastCollapsed] = useState(false);
 
-  /* Plan form state */
+  /* Form de novo plano (simples; sem documentos) */
   const [form, setForm] = useState({
     title: "",
     city: "",
@@ -614,11 +393,9 @@ export default function TripPage({ user }) {
       endDate: form.to || form.from || form.from,
       preferences: Array.from(form.prefs),
       activities: [],
-      documents: [],
       createdBy: user.id,
     };
     addTrip(payload);
-    // reset
     setForm({
       title: "",
       city: "",
@@ -627,37 +404,68 @@ export default function TripPage({ user }) {
       to: "",
       prefs: new Set(),
     });
-    // Optional: scroll to the right section
-    // scrollToId("section-upcoming");
   };
+
+  const openShare = (trip) => {
+    setShareTrip(trip);
+    setShareOpen(true);
+  };
+  const closeShare = () => setShareOpen(false);
+  const confirmShare = () => {
+    console.log("SHARE ▶", {
+      trip: shareTrip,
+      comment: shareComment.trim(),
+      includePreferences: shareIncludePrefs,
+    });
+    setShareComment("");
+    setShareIncludePrefs(true);
+    setShareOpen(false);
+  };
+  if (loading) {
+    return (
+      <main className="trip-page">
+        <div className="tm-loading">Loading trips…</div>
+      </main>
+    );
+  }
 
   return (
     <main className="trip-page">
       {/* TOP TABS */}
       <div className="section-nav">
         <button
-          className="tab-btn"
-          onClick={() => scrollToId("section-active")}
+          onClick={() =>
+            document.getElementById("section-active")?.scrollIntoView()
+          }
         >
-          <img className="icon-img" src={tripIcon} alt="" aria-hidden />
+          <img className="icon-img" src={tripIcon} alt="" />
           <span>Active trip</span>
         </button>
-
         <button
-          className="tab-btn"
-          onClick={() => scrollToId("section-upcoming")}
+          onClick={() =>
+            document.getElementById("section-upcoming")?.scrollIntoView()
+          }
         >
-          <img className="icon-img" src={upcomingIcon} alt="" aria-hidden />
+          <img className="icon-img" src={upcomingIcon} alt="" />
           <span>Upcoming</span>
         </button>
-
-        <button className="tab-btn" onClick={() => scrollToId("section-past")}>
-          <img className="icon-img" src={pastIcon} alt="" aria-hidden />
+        <button
+          onClick={() =>
+            document.getElementById("section-past")?.scrollIntoView()
+          }
+        >
+          <img className="icon-img" src={pastIcon} alt="" />
           <span>Past</span>
         </button>
-
-        <button className="tab-btn" onClick={() => scrollToId("section-plan")}>
-          <img className="icon-img" src={planIcon} alt="" aria-hidden />
+        <button
+          onClick={() =>
+            document.getElementById("section-plan")?.scrollIntoView()
+          }
+        >
+          {error && (
+            <div className="tm-alert error">Failed to load trips: {error}</div>
+          )}
+          <img className="icon-img" src={planIcon} alt="" />
           <span>Plan</span>
         </button>
       </div>
@@ -666,7 +474,7 @@ export default function TripPage({ user }) {
       <section id="section-active" className="trip-section">
         <SectionHeader
           icon={tripIcon}
-          label={`Active trip (${activeTrips.length})`}
+          label={<span>Active trip ({activeTrips.length})</span>}
         />
         {activeTrips.length ? (
           activeTrips.map((t) => (
@@ -676,9 +484,6 @@ export default function TripPage({ user }) {
               onShare={openShare}
               onSaveChanges={updateTrip}
               onDeleteTrip={deleteTrip}
-              onAddDoc={addDoc}
-              onDeleteDoc={deleteDoc}
-              onRenameDoc={renameDoc}
             />
           ))
         ) : (
@@ -690,7 +495,7 @@ export default function TripPage({ user }) {
       <section id="section-upcoming" className="trip-section">
         <SectionHeader
           icon={upcomingIcon}
-          label={`Upcoming (${upcomingTrips.length})`}
+          label={<span>Upcoming ({upcomingTrips.length})</span>}
         />
         {upcomingTrips.length ? (
           upcomingTrips.map((t) => (
@@ -700,9 +505,6 @@ export default function TripPage({ user }) {
               onShare={openShare}
               onSaveChanges={updateTrip}
               onDeleteTrip={deleteTrip}
-              onAddDoc={addDoc}
-              onDeleteDoc={deleteDoc}
-              onRenameDoc={renameDoc}
             />
           ))
         ) : (
@@ -714,7 +516,7 @@ export default function TripPage({ user }) {
       <section id="section-past" className="trip-section">
         <SectionHeader
           icon={tripIcon}
-          label={`Past trips (${pastTrips.length})`}
+          label={<span>Past trips ({pastTrips.length})</span>}
           right={
             pastTrips.length ? (
               <button
@@ -736,9 +538,6 @@ export default function TripPage({ user }) {
               onShare={openShare}
               onSaveChanges={updateTrip}
               onDeleteTrip={deleteTrip}
-              onAddDoc={addDoc}
-              onDeleteDoc={deleteDoc}
-              onRenameDoc={renameDoc}
             />
           ))
         )}
@@ -760,6 +559,7 @@ export default function TripPage({ user }) {
                 }
               />
             </label>
+
             <label className="field">
               <span>City</span>
               <input
@@ -771,6 +571,7 @@ export default function TripPage({ user }) {
                 }
               />
             </label>
+
             <label className="field">
               <span>Country</span>
               <input
@@ -782,6 +583,7 @@ export default function TripPage({ user }) {
                 }
               />
             </label>
+
             <label className="field">
               <span>From</span>
               <input
@@ -792,6 +594,7 @@ export default function TripPage({ user }) {
                 }
               />
             </label>
+
             <label className="field">
               <span>To</span>
               <input
@@ -852,39 +655,26 @@ export default function TripPage({ user }) {
           <div className="tm-modal-card">
             <div className="tm-modal-head">
               <h4>Share to feed</h4>
-              <button
-                className="icon-btn"
-                onClick={closeShare}
-                aria-label="Close"
-              >
-                ✕
-              </button>
+              <button onClick={closeShare}>X</button>
             </div>
             <div className="tm-modal-body">
-              <label className="field">
-                <span>Add a comment (optional)</span>
-                <textarea
-                  value={shareComment}
-                  onChange={(e) => setShareComment(e.target.value)}
-                  placeholder="Write something about this trip…"
-                />
-              </label>
-              <label className="switch">
+              <textarea
+                placeholder="Add a comment…"
+                value={shareComment}
+                onChange={(e) => setShareComment(e.target.value)}
+              />
+              <label>
                 <input
                   type="checkbox"
                   checked={shareIncludePrefs}
                   onChange={(e) => setShareIncludePrefs(e.target.checked)}
                 />
-                <span>Include Preferences in the post</span>
+                Include preferences
               </label>
             </div>
-            <div className="tm-modal-foot">
-              <button className="tm-btn ghost" onClick={closeShare}>
-                Cancel
-              </button>
+            <div className="tm-modal-footer">
               <button className="tm-btn" onClick={confirmShare}>
-                <img className="icon-img" src={shareIcon} alt="" aria-hidden />
-                <span>Share</span>
+                Share
               </button>
             </div>
           </div>
