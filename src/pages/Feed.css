@@ -1,526 +1,285 @@
+/* ===== Tokens ===== */
 :root {
-  --bg: #f3fff8;
-  --card: #fff;
-  --ink: #1c3739;
-  --muted: #6b7b7c;
-  --line: rgba(0, 0, 0, 0.08);
-  --accent: #8eafb3;
-  --danger: #b45b5b;
-  --radius: 12px;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --brand: #1c3739;
+  --placeholder: #8baaad;
+  --radius: 15px;
+  --h: 44px;
+  --font: "Gafata", system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial,
+    sans-serif;
+
+  --card-border: #e5e7eb;
+  --muted: #6b7280;
 }
 
-.tm-feed {
-  background: var(--bg);
-  min-height: 100dvh;
-  padding: 16px;
-  color: var(--ink);
-  box-sizing: border-box;
-}
-
-/* ===== Filters ===== */
-.tm-filters {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr)) auto;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.tm-field {
-  position: relative;
-  overflow: visible; /* evita cortar ícones / popovers */
-  box-sizing: border-box;
-}
-.tm-field input {
-  width: 100%;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0 14px;
-  background: #fff;
-  color: var(--ink);
-  outline: none;
-  box-sizing: border-box;
-}
-.tm-field.icon input {
-  padding-left: 38px;
-  padding-right: 30px;
-}
-.tm-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  display: inline-flex;
-  pointer-events: none;
-}
-.tm-icon svg {
-  display: block;
-}
-.tm-clear {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--muted);
-}
-
-/* único campo de data com popover */
-.tm-range {
-}
-.tm-range-display {
-  width: 100%;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  text-align: left;
-  padding: 0 14px 0 38px;
-  cursor: pointer;
-}
-.tm-range-popover {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 8px);
-  width: min(440px, 92vw);
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: var(--shadow);
-  z-index: 10;
-}
-.tm-range-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.tm-range-label {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-.tm-range-popover input {
-  width: 100%;
-  height: 40px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0 10px;
-}
-.tm-range-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-/* ===== Buttons/links ===== */
-.tm-btn {
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.tm-btn.ghost {
+/* ===== Toolbar (sem fundo) ===== */
+.feed-toolbar {
+  width: min(800px, 92%);
+  margin: 16px auto 8px;
+  padding: 0;
   background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-.tm-btn.sm {
-  padding: 8px 12px;
-  font-size: 14px;
-}
-.tm-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.tm-link {
-  border: none;
-  background: none;
-  color: var(--accent);
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 8px;
-}
-.tm-link:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-.tm-link.danger {
-  color: var(--danger);
-}
-
-.tm-author-link {
-  border: none;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-}
-
-/* ===== Composer ===== */
-.tm-composer {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 1fr;
   gap: 12px;
-  align-items: start;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 12px;
-  margin-bottom: 10px;
 }
-
-.tm-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #e9efef;
-  border: 1px solid var(--line);
-}
-.tm-avatar.sm {
-  width: 32px;
-  height: 32px;
-}
-
-.tm-avatar-btn {
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.tm-avatar-btn:focus-visible {
-  outline: 2px solid var(--accent);
-}
-.tm-avatar-btn.sm {
-  width: 32px;
-  height: 32px;
-}
-
-.tm-composer-main textarea {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 12px;
-  resize: vertical;
-  min-height: 56px;
-  outline: none;
-  color: var(--ink);
-}
-
-/* ===== Result bar ===== */
-.tm-results-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: var(--muted);
-  margin: 8px 2px 12px;
-}
-
-/* ===== Posts ===== */
-.tm-posts {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 14px;
-}
-.tm-post {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 12px;
-}
-.tm-post-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.tm-post-ops {
-  margin-left: auto;
-  display: flex;
-  gap: 4px;
-}
-.tm-author {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.tm-time {
-  color: var(--muted);
-  font-size: 12px;
-}
-.tm-time.small {
-  font-size: 11px;
-}
-
-.tm-post-text {
-  margin: 10px 0 8px;
-  white-space: pre-wrap;
-}
-.tm-edit-area {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-
-.tm-post-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--muted);
-  font-size: 14px;
-  margin: 6px 0 4px;
-}
-.tm-action {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 8px;
-}
-.tm-action:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-.tm-divider {
-  width: 1px;
-  height: 18px;
-  background: var(--line);
-}
-
-/* ===== Comments ===== */
-.tm-comments {
-  border-top: 1px solid var(--line);
-  padding-top: 8px;
-  display: grid;
-  gap: 8px;
-}
-.tm-comment {
-  display: grid;
-  grid-template-columns: 32px 1fr;
-  gap: 8px;
-  align-items: start;
-}
-.tm-comment-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.tm-comment-ops {
-  margin-left: auto;
-  display: flex;
-  gap: 4px;
-}
-.tm-comment-body p {
-  margin: 2px 0 0;
-}
-.tm-comment-form {
-  display: grid;
-  grid-template-columns: 32px 1fr auto;
-  gap: 8px;
-  align-items: center;
-  margin-top: 2px;
-}
-.tm-comment-form input {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 12px;
-  outline: none;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 880px) {
-  .tm-filters {
-    grid-template-columns: 1fr 1fr;
-  }
-  .tm-range-popover {
-    width: min(420px, 96vw);
+@media (min-width: 640px) {
+  .feed-toolbar {
+    grid-template-columns: 1fr 1fr 1.2fr auto; /* Country | City | DateRange | Actions */
+    gap: 16px;
+    align-items: center;
   }
 }
-@media (max-width: 520px) {
-  .tm-filters {
+@media (max-width: 480px) {
+  .feed-toolbar {
     grid-template-columns: 1fr;
   }
-  .tm-composer {
-    grid-template-columns: 36px 1fr;
-  }
-} /* faz o fundo ocupar a tela toda nesta rota */
-body.feed-route {
-  background: var(--bg);
 }
 
-/* container centrado, com padding fluido e sem cortar nada */
-.fullbleed {
+/* ===== Inputs/Pills unificados (Country / City / DateRange) ===== */
+/* aceita tanto .filter-* quanto .input-* nomes antigos */
+:is(.filter-wrap, .input-wrap) {
+  position: relative;
+  width: 100px; /* largura dos botoes */
+}
+
+/* Base visual idêntico para todos os pills/inputs */
+:is(.filter-pill, .input-pill, .date-range) {
+  height: var(--h);
+  border-radius: var(--radius);
+  border: 1px solid var(--brand);
+  background: transparent;
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
   width: 100%;
-  max-width: 1100px;
-  margin-inline: auto;
-  padding-inline: clamp(12px, 4vw, 24px);
-  box-sizing: border-box;
+  font: 400 16px/25px var(--font);
+  transition: background 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
-/* filtros se reorganizam sozinhos (sem estourar) */
-.tm-filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* <- novo */
-  gap: 12px;
+/* Ícone alinhado à esquerda */
+:is(.filter-icon, .left-icon) {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--brand);
+  opacity: 0.95;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Campo de texto dentro da pill (Country/City) */
+.filter-input {
+  padding-left: 40px;
+} /* espaço pro ícone */
+.filter-input input,
+.input-pill input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+.filter-input input::placeholder {
+  color: var(--placeholder);
+}
+
+/* Popover do calendário (DateRange) */
+.date-popover {
+  position: absolute;
+  z-index: 50;
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12),
+    0 1px 2px rgba(16, 24, 40, 0.06);
+  overflow: hidden;
+}
+
+/* Hovers/Focus */
+:is(.filter-pill, .input-pill, .date-range):hover {
+  background: rgba(28, 55, 57, 0.05);
+}
+.filter-input:focus-within,
+:is(.filter-pill, .input-pill, .date-range):focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(28, 55, 57, 0.2);
+}
+
+/* ===== Ações (Clear / Search) ===== */
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  flex-wrap: wrap; /* evita sobreposição em telas estreitas */
+}
+@media (min-width: 640px) {
+  .actions {
+    justify-content: flex-end;
+  }
+}
+
+.primary-btn,
+.ghost-btn {
+  height: var(--h);
+  border-radius: var(--radius);
+  padding: 0 18px;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  font: 600 16px/1 var(--font);
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.02s ease;
+}
+.primary-btn:hover,
+.ghost-btn:hover {
+  filter: brightness(0.95);
+}
+.primary-btn:active,
+.ghost-btn:active {
+  transform: translateY(1px);
+}
+
+/* ===== A11y util ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== Overrides do react-date-range (opcional) ===== */
+.rdrDayNumber span {
+  color: var(--brand);
+}
+.rdrDayToday .rdrDayNumber span::after {
+  background: var(--brand);
+}
+.rdrStartEdge,
+.rdrEndEdge {
+  background: var(--brand) !important;
+}
+.rdrInRange {
+  background: rgba(28, 55, 57, 0.12) !important;
+}
+.rdrDefinedRangesWrapper {
+  display: none;
+} /* esconde ranges rápidos */
+
+/* ===== Utilidades gerais ===== */
+.container-800 {
+  width: min(800px, 92%);
+  margin: 20px auto;
+}
+
+/* ===== Post cards ===== */
+.post-card {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px;
   margin-bottom: 12px;
 }
-
-/* botão Clear com altura dos inputs, não estoura */
-.tm-filters .tm-btn.ghost {
-  height: 40px;
-}
-
-/* evita “corte” de ícones/popovers no container do campo */
-.tm-field {
-  position: relative;
-  overflow: visible;
-}
-
-/* o popover do calendário ancora à DIREITA para nunca sair da tela */
-.tm-range-popover {
-  right: 0; /* <- novo */
-  left: auto; /* <- novo */
-  width: min(440px, 96vw);
-}
-
-/* em telas pequenas, tudo empilha sem cortar */
-@media (max-width: 520px) {
-  .tm-composer {
-    grid-template-columns: 36px 1fr;
-  }
-}
-body.feed-route {
-  background: var(--bg);
-}
-
-.fullbleed {
-  width: 100%;
-  max-width: 1100px;
-  margin-inline: auto;
-  padding-inline: clamp(12px, 4vw, 24px);
-  box-sizing: border-box;
-}
-
-/* evita corte e ancora o calendário à direita */
-.tm-field {
-  position: relative;
-  overflow: visible;
-}
-.tm-range-popover {
-  right: 0;
-  left: auto;
-  width: min(440px, 96vw);
-} /* ----- tamanhos e tipografia confortáveis ----- */
-:root {
-  --font-base: 16px;
-  --font-sm: 14px;
-  --control-h: 46px; /* altura de inputs/botões */
-}
-
-/* inputs (country/city) e “display” do range com a mesma altura */
-.tm-field input,
-.tm-range-display {
-  height: var(--control-h);
-  font-size: var(--font-base);
-}
-
-/* popover do range: maior e legível */
-.tm-range-popover {
-  right: 0;
-  left: auto;
-  width: min(600px, 96vw); /* ↑ era ~440px */
-  padding: 16px; /* ↑ padding maior */
-  font-size: var(--font-base); /* texto maior */
-  border-radius: 12px;
-}
-
-.tm-range-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.post-header {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  margin-bottom: 8px;
 }
-
-.tm-range-label {
-  display: block;
-  font-size: 13px;
+.avatar-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: #f3f4f6;
+  cursor: pointer;
+}
+.author-name,
+.composer-label {
+  font-weight: 600;
+  font-family: var(--font);
+  align-items: center;
+}
+.post-time {
+  font-size: 12px;
   color: var(--muted);
-  margin-bottom: 6px;
+}
+.post-text {
+  margin: 8px 0 12px;
+  line-height: 1.55;
+}
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.tm-range-popover input {
-  height: var(--control-h);
-  font-size: var(--font-base);
-  border-radius: 10px;
-  padding: 0 12px;
+.comment-list {
+  margin-top: 8px;
+  padding-left: 16px;
+}
+.comment-item {
+  margin: 6px 0;
 }
 
-/* ações do popover: botões visíveis e com largura mínima */
-.tm-range-actions {
+.composer-form {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  grid-template-columns: 1fr;
+}
+.composer-form > * {
+  width: min(100%, 720px); /* limite comum */
+  max-width: 100%; /* não passa do form */
+  min-width: 0; /* evita overflow por conteúdo longo */
+}
+.composer-textarea {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  padding: 12px;
+  resize: vertical;
+  outline: none;
+  font-family: var(--font);
+}
+.composer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+  width: min(100%, 720px); /* redundante, mas explícito */
 }
 
-.tm-btn {
-  font-size: var(--font-sm);
-  padding: 10px 16px;
-  min-width: 96px; /* garante que o texto caiba */
-  border-radius: 999px;
-  border: 1px solid var(--accent, #2e7d7b);
-  background: var(--accent, #2e7d7b); /* fallback se a var não existir */
-  color: #fff;
+.inline-comment {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.flex-1 {
+  flex: 1;
 }
 
-.tm-btn.primary {
-  border-color: var(--accent, #2e7d7b);
-  background: var(--accent, #2e7d7b);
-  color: #2e7d7b;
+/* ===== Wrapper de data ===== */
+.date-wrap {
+  position: relative;
 }
-
-.tm-btn.ghost {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
-}
-
-/* aumenta também a altura do botão Clear da barra de filtros */
-.tm-filters .tm-btn.ghost {
-  height: var(--control-h);
-}
-
-/* Botão Clear com o mesmo tamanho/alinhamento dos campos */
-.tm-filters .tm-btn,
-.tm-filters .tm-btn.ghost {
-  height: var(--control-h); /* mesma altura dos inputs */
-  padding: 0 16px;
-  border-radius: 999px;
-  display: inline-flex; /* centraliza o texto verticalmente */
-  align-items: center;
-  justify-content: center;
-  line-height: 1; /* evita o texto “subir” */
-  width: 100%; /* opcional: ocupa a coluna inteira como os inputs */
-}
-.tm-filters {
-  align-items: center;
-} /* responsivo: nada cortado */
-.tm-field {
-  overflow: visible;
+.container-800 {
+  width: min(800px, 92%);
+  margin: 20px auto;
 }

@@ -195,16 +195,7 @@ export default function SettingsPage() {
                 />
                 <span>Everyone</span>
               </label>
-              <label className="tm-radio">
-                <input
-                  type="radio"
-                  name="vis"
-                  value="friends"
-                  checked={postVisibility === "friends"}
-                  onChange={(e) => setPostVisibility(e.target.value)}
-                />
-                <span>Friends</span>
-              </label>
+
               <label className="tm-radio">
                 <input
                   type="radio"
@@ -222,14 +213,6 @@ export default function SettingsPage() {
         {/* SECURITY */}
         <fieldset className="tm-fieldset">
           <legend>Security</legend>
-          <label className="tm-check">
-            <input
-              type="checkbox"
-              checked={twoFA}
-              onChange={() => setTwoFA((v) => !v)}
-            />
-            <span>Two-factor authentication (2FA)</span>
-          </label>
 
           <form className="tm-pass" onSubmit={changePassword}>
             <label className="tm-field">

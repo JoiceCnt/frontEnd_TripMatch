@@ -1,19 +1,14 @@
-/* reset básico */
+/* Box-sizing global correto */
+html {
+  box-sizing: border-box;
+}
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+  box-sizing: inherit;
 }
-/* aplique na sua <main> ou wrapper das páginas */
-.page {
-  padding-top: calc(var(--nav-h) + var(--gap));
-}
-:root {
-  --nav-h: clamp(56px, 8vw, 72px);
-}
-:root {
-  --nav-h: clamp(56px, 8vw, 72px);
-}
+
+/* Reset básico útil para inputs */
 html,
 body {
   margin: 0;
@@ -27,39 +22,40 @@ video {
   height: auto;
 }
 
-/* escala fluida e container */
 :root {
+  --nav-h: clamp(56px, 8vw, 72px);
+  --gap: clamp(8px, 2vw, 16px);
   --container: min(1100px, 92vw);
   --space-1: clamp(8px, 1.2vw, 14px);
   --space-2: clamp(12px, 2vw, 24px);
   --space-3: clamp(16px, 3vw, 40px);
   --radius: 14px;
   --accent: #8eafb3;
+  --font-sans: "Gafata", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+    Cantarell, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
 }
+
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   color: #222;
 }
+
 .container {
   width: var(--container);
   margin-inline: auto;
   padding-inline: var(--space-1);
 }
 
-h1 {
-  font-size: clamp(24px, 4vw, 44px);
-  line-height: 1.1;
-  margin: var(--space-2) 0;
-}
-:root {
-  --nav-h: 64px;
-  --gap: clamp(8px, 2vw, 16px);
+/* Página sob a navbar */
+.page {
+  padding-top: calc(var(--nav-h) + var(--gap));
 }
 
+/* Navbar */
 .tm-navbar {
   position: sticky;
-  top: 0;
   top: 0;
   left: 0;
   right: 0;
@@ -73,6 +69,6 @@ h1 {
 .tm-navbar svg {
   display: inline-block;
   max-width: none;
-  height: 20px;
   width: 20px;
+  height: 20px;
 }

@@ -1,3 +1,27 @@
+/* Global font setup */
+:root {
+  --app-font: "Gafata", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+}
+
+html,
+body {
+  font-family: var(--app-font);
+}
+
+/* Faz inputs e botões herdarem a fonte */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* (Opcional) Alguns componentes de libs podem precisar de reforço */
+* {
+  font-family: inherit;
+}
+
 html,
 body,
 #root {

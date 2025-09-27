@@ -1,7 +1,7 @@
 // src/components/TripMatchNavbar.jsx
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import "./TripMatchNavbar.css"; // << CSS separado
+import "./TripMatchNavbar.css";
 
 export default function TripMatchNavbar({
   variant = "home",
@@ -50,13 +50,10 @@ export default function TripMatchNavbar({
         />
       </button>
 
-      {/* Center: nav buttons */}
+      {/* Center: nav buttons (Stories removido) */}
       <nav className="tm-nav" aria-label="Main navigation">
         <NavLink to="/activities" className={linkClass}>
           Activities
-        </NavLink>
-        <NavLink to="/stories" className={linkClass}>
-          Member Stories
         </NavLink>
         <NavLink to="/feed" className={linkClass}>
           Feed

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-/** Util simples de GET com token (se usar JWT) */
+/** Simple GET util with optional JWT token */
 async function getJSON(url, token) {
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -9,7 +9,7 @@ async function getJSON(url, token) {
   return res.json();
 }
 
-/** Junta tudo e devolve items normalizados */
+/** Merge all sources and return normalized activity items */
 function buildActivity({
   likes = [],
   comments = [],
@@ -18,7 +18,7 @@ function buildActivity({
 }) {
   const items = [];
 
-  // Likes → viram activities do tipo "like"
+  // Likes → become "like" activities
   for (const lk of likes) {
     const p = postsById[lk.post] || null;
     items.push({
@@ -43,7 +43,7 @@ function buildActivity({
     });
   }
 
-  // (Opcional) Posts do próprio usuário → "post"
+  // (Optional) User's own posts → "post"
   for (const po of posts) {
     items.push({
       type: "post",
@@ -52,7 +52,7 @@ function buildActivity({
     });
   }
 
-  // Ordena por data desc
+  // Sort by date desc
   return items
     .filter((i) => i.createdAt)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -76,15 +76,15 @@ export default function ActivitiesPage({ userId, apiBase = "/api", token }) {
       setErr("");
 
       try {
-        // 1) Busca likes, comments e (opcional) posts do próprio user
+        // 1) Fetch likes, comments and (optional) user's own posts
         const [likes, comments, ownPosts] = await Promise.all([
           getJSON(`${apiBase}/likes?userId=${userId}`, token),
           getJSON(`${apiBase}/comments?author=${userId}`, token),
-          // Se não quiser mostrar "publicou", troque por []
+          // If you don't want to show "published", replace with []
           getJSON(`${apiBase}/posts?author=${userId}`, token),
         ]);
 
-        // 2) Coleta postIds únicos de likes+comments
+        // 2) Collect unique postIds from likes + comments
         const postIds = Array.from(
           new Set(
             [
@@ -94,25 +94,25 @@ export default function ActivitiesPage({ userId, apiBase = "/api", token }) {
           )
         );
 
-        // 3) Traz posts em lote (ideal). Se não existir:
-        //    - faça Promise.all de GET /posts/:id
+        // 3) Fetch posts in batch (ideal). If not available:
+        //    - fallback to Promise.all GET /posts/:id
         let postsBatch = [];
         if (postIds.length) {
-          // Tente primeiro um endpoint em lote
           try {
+            // Try a batch endpoint first
             postsBatch = await getJSON(
               `${apiBase}/posts?ids=${postIds.join(",")}`,
               token
             );
           } catch {
-            // Fallback: várias chamadas (menos eficiente)
+            // Fallback: multiple requests (less efficient)
             postsBatch = await Promise.all(
               postIds.map((id) => getJSON(`${apiBase}/posts/${id}`, token))
             );
           }
         }
 
-        // 4) Indexa posts por id
+        // 4) Index posts by id
         const postsById = {};
         for (const p of postsBatch) {
           const pid = p.id || p._id;
@@ -123,7 +123,7 @@ export default function ActivitiesPage({ userId, apiBase = "/api", token }) {
           setData({ likes, comments, posts: ownPosts, postsById });
         }
       } catch (e) {
-        if (!cancel) setErr(e.message || "Erro ao carregar atividades.");
+        if (!cancel) setErr(e.message || "Failed to load activities.");
       } finally {
         if (!cancel) setLoading(false);
       }
@@ -138,11 +138,13 @@ export default function ActivitiesPage({ userId, apiBase = "/api", token }) {
   const items = useMemo(() => buildActivity(data), [data]);
 
   if (!userId)
-    return <div style={{ padding: 16 }}>Entre para ver suas atividades.</div>;
-  if (loading) return <div style={{ padding: 16 }}>Carregando…</div>;
+    return (
+      <div style={{ padding: 16 }}>Please sign in to see your activities.</div>
+    );
+  if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
   if (err) return <div style={{ padding: 16, color: "crimson" }}>{err}</div>;
   if (!items.length)
-    return <div style={{ padding: 16 }}>Sem atividades por enquanto.</div>;
+    return <div style={{ padding: 16 }}>No activities yet.</div>;
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 12 }}>
@@ -161,9 +163,9 @@ export default function ActivitiesPage({ userId, apiBase = "/api", token }) {
           </div>
 
           <div style={{ fontWeight: 600, marginTop: 6 }}>
-            {it.type === "like" && "Você curtiu um post"}
-            {it.type === "comment" && "Você comentou um post"}
-            {it.type === "post" && "Você publicou um post"}
+            {it.type === "like" && "You liked a post"}
+            {it.type === "comment" && "You commented on a post"}
+            {it.type === "post" && "You published a post"}
           </div>
 
           {it.post && (
