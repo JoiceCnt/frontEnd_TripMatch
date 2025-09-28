@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Feed.css";
@@ -8,10 +7,6 @@ const demoUser = { id: "507f1f77bcf86cd799439011", name: "You", photo: "" };
 const CSC_API_URL = "https://api.countrystatecity.in/v1";
 const CSC_API_KEY = "eDZSRUZZSlhUMGpkNm1GUXVwUXN5REIxSGF3YldESllpaXhuWUM4RA==";
 const HEADERS = { "X-CSCAPI-KEY": CSC_API_KEY };
-=======
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Feed.css";
 
 import likeIcon from "../assets/Iconos/Like.png";
 import comentIcon from "../assets/Iconos/Comment.png";
@@ -19,13 +14,6 @@ import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
-/**
- * Feed (search-first)
- * - Toolbar: Country / City / Date Range + actions
- * - Composer: simple text-only post creator (local state for now)
- * - Local CRUD: create/like/comment stubs (replace with API later)
- */
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
 
 export default function Feed({ currentUser = demoUser }) {
   const navigate = useNavigate();
@@ -33,7 +21,6 @@ export default function Feed({ currentUser = demoUser }) {
   const [posts, setPosts] = useState([]);
   const [countries, setCountries] = useState([]);
 
-<<<<<<< HEAD
   // -------------------- FETCH INICIAL --------------------
   useEffect(() => {
     fetch("http://localhost:5005/api/posts")
@@ -56,51 +43,50 @@ export default function Feed({ currentUser = demoUser }) {
       .catch(console.error);
   }, []);
 
-=======
-  // ---- Filters for the toolbar (Country / City / Date range) ----
-  const [filters, setFilters] = useState({
-    country: "",
-    city: "",
-    startDate: "",
-    endDate: "",
-  });
-
-  // ---- Posts local state (replace with server data later) ----
-  const [posts, setPosts] = useState(seedPosts);
-
+  
   // Apply route background class when this page is mounted
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
   useEffect(() => {
     document.body.classList.add("feed-route");
     return () => document.body.classList.remove("feed-route");
   }, []);
 
-<<<<<<< HEAD
   // ----------------- CRUD Posts -----------------
 const createPost = async (text) => {
+  if (!currentUser?.id) {
+    console.error("No user logged in");
+    return;
+  }
+
   const newPost = {
-    text: text.trim(),
-    author: currentUser.id,
+    title: text.trim().slice(0, 50) || "Untitled", // opcional: limitar largo
+    comment: text.trim(),
+    author: currentUser.id, // ⚡ siempre mandamos un ID válido
     likes: [],
     comments: [],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   try {
     const res = await fetch("http://localhost:5005/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newPost), // ✅ aquí sí se usa
+      body: JSON.stringify(newPost),
     });
+
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const saved = await res.json();
+
+    // Aseguramos que likes y comments existan
     saved.likes = saved.likes || [];
     saved.comments = saved.comments || [];
-    setPosts((p) => [saved, ...p]);
+
+    // Añadimos el nuevo post al estado
+    setPosts((prev) => [saved, ...prev]);
   } catch (err) {
-    console.error(err);
+    console.error("❌ ERROR createPost:", err);
   }
 };
+
 
 const updatePost = async (id, patch) => {
   try {
@@ -118,47 +104,6 @@ const updatePost = async (id, patch) => {
               ...updated,
               comments: p.comments || [],
               likes: updated.likes || p.likes || [],
-=======
-  // ---------- CREATE ----------
-  // Creates a new post from composer text (trim/empty guard)
-  const createPost = (text) => {
-    const clean = (text || "").trim();
-    if (!clean) return;
-    const newPost = {
-      id: uid(),
-      author: { ...currentUser },
-      text: clean,
-      likes: 0,
-      comments: [],
-      createdAt: new Date().toISOString(),
-    };
-    // Prepend so newest appears first
-    setPosts((prev) => [newPost, ...prev]);
-  };
-
-  // ---------- LIKE ----------
-  // Simple like toggler (no per-user tracking here)
-  const likePost = (id) => {
-    setPosts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
-    );
-  };
-
-  // ---------- COMMENT ----------
-  // Pushes a new comment to the post (local only)
-  const addComment = (id, text) => {
-    const clean = (text || "").trim();
-    if (!clean) return;
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              comments: [
-                ...p.comments,
-                { id: uid(), author: currentUser.name, text: clean },
-              ],
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
             }
           : p
       )
@@ -168,7 +113,6 @@ const updatePost = async (id, patch) => {
   }
 };
 
-<<<<<<< HEAD
 const deletePost = async (id) => {
   try {
     await fetch(`http://localhost:5005/api/posts/${id}`, { method: "DELETE" });
@@ -201,7 +145,15 @@ const likePost = async (id) => {
 
 // ----------------- CRUD Comentarios -----------------
 const addComment = async (postId, text) => {
-  const newComment = { text: text.trim(), author: currentUser, createdAt: new Date().toISOString() };
+  const clean = text?.trim();
+  if (!clean) return;
+
+  const newComment = { 
+    text: text.trim(), 
+    user: currentUser.id, 
+    createdAt: new Date().toISOString() 
+  };
+
   try {
     const res = await fetch(`http://localhost:5005/api/posts/${postId}/comments`, {
       method: "POST",
@@ -325,6 +277,8 @@ const deleteComment = async (postId, commentId) => {
           value={filters.country}
           onChange={(v) => setFilters((f) => ({ ...f, country: v, city: "" }))}
           fetchOptions={fetchCountriesDebounced}
+          onClear={() => setFilters({ country: "", city: "", startDate: "", endDate: "" })}
+          onSearch={() => console.log("SEARCH with:", filters)}
         />
         <Autocomplete
           icon="search"
@@ -332,6 +286,8 @@ const deleteComment = async (postId, commentId) => {
           value={filters.city}
           onChange={(v) => setFilters((f) => ({ ...f, city: v }))}
           fetchOptions={(q, cb) => fetchCitiesDebounced(q, filters.country, cb)}
+          onClear={() => setFilters({ country: "", city: "", startDate: "", endDate: "" })}
+          onSearch={() => console.log("SEARCH with:", filters)}
         />
       </div>
 
@@ -359,32 +315,22 @@ const deleteComment = async (postId, commentId) => {
 }
 
 // =================== COMPONENTES AUXILIARES ===================
-function Autocomplete({ icon, value, onChange, placeholder, fetchOptions }) {
+function Autocomplete({ icon, value, onChange, placeholder, fetchOptions, onClear, onSearch }) {
   const [options, setOptions] = useState([]);
   const handleInput = (v) => {
     onChange(v);
     if (!v || v.length < 2) return setOptions([]);
     fetchOptions(v, setOptions);
-=======
-  // ---------- Toolbar handlers ----------
-  const handleSearch = () => {
-    // TODO: Replace with your real search (API call) using `filters`
-    console.log("SEARCH with:", filters);
   };
-
-  const handleClear = () => {
-    setFilters({ country: "", city: "", startDate: "", endDate: "" });
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
-  };
+ 
   return (
-<<<<<<< HEAD
     <div className="tm-field icon">
       <span className="tm-icon">{icon === "calendar" ? "📅" : "🔍"}</span>
-      <input list={placeholder} value={value} placeholder={placeholder} onChange={(e) => handleInput(e.target.value)} />
+      <input list={placeholder} value={value} placeholder={placeholder} onChange={(e) => handleInput(e.target.value)} onKeyDown={(e) => { if(e.key === "Enter") onSearch?.(); }} />
       <datalist id={placeholder}>
         {options.map((opt, index) => (<option key={`${opt}-${index}`} value={opt} />))}
       </datalist>
-      {value && <button className="tm-clear" onClick={() => handleInput("")}>×</button>}
+      {value && <button className="tm-clear" onClick={() => { handleInput(""); onClear?.(); }}>×</button>}
     </div>
   );
 }
@@ -397,161 +343,7 @@ function PostComposer({ onSubmit, currentUser }) {
       <img src={currentUser.photo || defaultAvatar} alt="You" className="tm-avatar" />
       <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Share something..." />
       <button type="submit" disabled={!text.trim()}>Post</button>
-=======
-    <main className="feed-page">
-      {/* ==================== FILTER TOOLBAR ==================== */}
-      <div className="feed-toolbar">
-        {/* Country */}
-        <div className="filter-wrap">
-          <svg className="filter-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="filter-pill filter-input">
-            <input
-              id="country-input"
-              type="text"
-              placeholder="Country"
-              value={filters.country}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, country: e.target.value }))
-              }
-            />
-          </div>
-        </div>
-
-        <div className="filter-wrap">
-          <svg className="filter-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="filter-pill filter-input">
-            <input
-              id="city-input"
-              type="text"
-              placeholder="City"
-              value={filters.city}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, city: e.target.value }))
-              }
-            />
-          </div>
-        </div>
-
-        {/* Date range (um único botão com calendário) */}
-        <RangePicker
-          value={{ startDate: filters.startDate, endDate: filters.endDate }}
-          onChange={({ startDate, endDate }) =>
-            setFilters((f) => ({ ...f, startDate, endDate }))
-          }
-          label="Start date — End date"
-        />
-
-        {/* Actions */}
-        <div className="actions">
-          <button type="button" className="ghost-btn" onClick={handleClear}>
-            Clear
-          </button>
-          <button type="button" className="primary-btn" onClick={handleSearch}>
-            Search
-          </button>
-        </div>
-      </div>
-      {/* ================== END FILTER TOOLBAR ================== */}
-
-      {/* ==================== COMPOSER ==================== */}
-      <Composer onSubmit={createPost} />
-
-      {/* ==================== POSTS LIST ==================== */}
-      <section
-        className="posts-list"
-        style={{ width: "min(800px,92%)", margin: "20px auto" }}
-      >
-        {posts.map((p) => (
-          <article
-            key={p.id}
-            className="post-card"
-            style={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 14,
-              padding: 16,
-              marginBottom: 12,
-            }}
-          >
-            {/* Header with avatar and author */}
-            <header
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 8,
-              }}
-            >
-              <button
-                aria-label={`Open ${p.author.name} profile`}
-                onClick={() => navigate(`/users/${p.author.id}`)}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  border: "1px solid #e5e7eb",
-                  background: "#f3f4f6",
-                  cursor: "pointer",
-                }}
-                title="Open profile"
-              />
-              <div>
-                <div style={{ fontWeight: 600 }}>{p.author.name}</div>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>
-                  {new Date(p.createdAt).toLocaleString()}
-                </div>
-              </div>
-            </header>
-
-            {/* Post text */}
-            <p style={{ margin: "8px 0 12px 0", lineHeight: 1.55 }}>{p.text}</p>
-
-            {/* Actions (like + comment inline) */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button
-                className="pill"
-                onClick={() => likePost(p.id)}
-                aria-label="Like post"
-              >
-                {" "}
-                <img src={likeIcon} alt="Like" className="icon-like" />
-                {p.likes}
-              </button>
-            </div>
-
-            {/* Simple comment form */}
-            <InlineComment onSubmit={(txt) => addComment(p.id, txt)} />
-
-            {/* Comments list */}
-            {p.comments.length > 0 && (
-              <ul style={{ marginTop: 8, paddingLeft: 16 }}>
-                {p.comments.map((c) => (
-                  <li key={c.id} style={{ margin: "6px 0" }}>
-                    <strong>{c.author}:</strong> {c.text}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </article>
-        ))}
-      </section>
-    </main>
+  </form>
   );
 }
 
@@ -631,14 +423,15 @@ function InlineComment({ onSubmit }) {
       <button type="submit" className="pill">
         <img src={comentIcon} alt="coment" className="icon-like" />
       </button>
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
     </form>
   );
 }
 
-<<<<<<< HEAD
 function PostCard({ post, currentUser, onAvatarClick, onLike, onUpdate, onDelete, onAddComment, onUpdateComment, onDeleteComment, onCommentAvatarClick }) {
-  const author = { id: post.author, name: "User", photo: defaultAvatar };
+  const author = post.author
+    ? (typeof post.author === "object" ? post.author : { id: post.author, name: "User", photo: defaultAvatar })
+    : { id: demoUser.id, name: demoUser.name, photo: demoUser.photo || defaultAvatar };
+
   const isOwner = currentUser.id === author.id;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.comment || post.text || "");
@@ -680,7 +473,10 @@ function PostCard({ post, currentUser, onAvatarClick, onLike, onUpdate, onDelete
     )}
 
     <div className="tm-post-actions">
-      <button onClick={onLike}>❤️{post.likes?.length || 0}</button>
+     <button onClick={onLike} className="like-button">
+      <img src={likeIcon} alt="like" className="like-icon" />
+      {post.likes?.length || 0}
+    </button>
       <span>💬 {post.comments?.length || 0}</span>
     </div>
 
@@ -741,7 +537,6 @@ function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
     </div>
   );
 }
-=======
 /* ==================== RANGE PICKER (in-file component) ==================== */
 /** Button that opens a popover calendar (react-date-range) to pick start/end. */
 function RangePicker({ value, onChange, label = "Start date — End date" }) {
@@ -805,36 +600,3 @@ function RangePicker({ value, onChange, label = "Start date — End date" }) {
   );
 }
 
-/* ==================== DEMO DATA / HELPERS (replace later) ==================== */
-
-const demoUser = {
-  id: "u_001",
-  name: "Demo User",
-};
-
-const seedPosts = [
-  {
-    id: "p_001",
-    author: { id: "u_002", name: "Ava" },
-    text: "Welcome to Trip Match feed! 🚀",
-    likes: 2,
-    comments: [{ id: "c_1", author: "Liam", text: "Looks great!" }],
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-  },
-  {
-    id: "p_002",
-    author: { id: "u_003", name: "Noah" },
-    text: "Anyone in Madrid this weekend?",
-    likes: 1,
-    comments: [],
-    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-  },
-];
-
-// Tiny unique id generator (front-only)
-function uid() {
-  return (
-    Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4)
-  );
-}
->>>>>>> 57f622a5c19a9ad39fe72d8b5aa7a6e0e067d641
