@@ -316,7 +316,7 @@ export default function TripPage({ user = { id: "me" } }) {
     const fetchCities = async () => {
       try {
         const res = await axios.get(
-          `${CSC_API_URL}/countries/${newTrip.country}/cities`,
+          `${CSC_API_URL}/countries/${newTrip.countryCode}/cities`,
           { headers: HEADERS }
         );
         setCities(res.data);
@@ -431,8 +431,8 @@ export default function TripPage({ user = { id: "me" } }) {
     }
      setNewTrip({
     ...newTrip,
-      countryCode: found.name,
-      country: found.iso2,
+      countryCode: found.iso2,
+      country: found.name,
       city: "",
     });
     setCities([]);
