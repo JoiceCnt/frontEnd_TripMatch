@@ -280,12 +280,22 @@ export default function TripPage({ user = { id: "me" } }) {
 
   /* ---------------- Fetch trips ---------------- */
   useEffect(() => {
-    fetch("http://localhost:5005/api/trips")
-      .then((res) => res.json())
-      .then((data) => setTrips(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    const fetchTrips = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5005/api/trips", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTrips(res.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrips();
   }, []);
+
 
   /* ---------------- Fetch countries ---------------- */
   useEffect(() => {
@@ -318,22 +328,49 @@ export default function TripPage({ user = { id: "me" } }) {
   }, [newTrip.country]);
 
   /* ---------------- CRUD handlers ---------------- */
-  const updateTrip = (id, payload) => {
-    setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, ...payload } : t)));
-  };
-  const deleteTrip = (id) => {
-    if (!confirm("Delete this trip?")) return;
-    setTrips((prev) => prev.filter((t) => t.id !== id));
-  };
-  const addTrip = async (payload) => {
-    try {
-      const res = await axios.post("http://localhost:5005/api/trips", payload);
-      setTrips((prev) => [res.data, ...prev]);
+  const updateTrip = async (id, payload) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.put(
+      `http://localhost:5005/api/trips/${id}`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+      setTrips(prev => prev.map(t => t.id === id ? res.data : t));
     } catch (err) {
       console.error(err);
-      alert("Failed to create trip");
+      alert("Failed to update trip");
     }
   };
+
+  const deleteTrip = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.delete(`http://localhost:5005/api/trips/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+      setTrips(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete trip");
+    }
+  };
+
+  const addTrip = async (payload) => {
+  try {
+    const token = localStorage.getItem("token");
+    console.log("Token from localStorage:", token);
+    const res = await axios.post(
+      "http://localhost:5005/api/trips",
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setTrips((prev) => [res.data, ...prev]);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to create trip");
+  }
+};
 
   /* ---------------- Submit new trip ---------------- */
   const submitPlan = async (e) => {
