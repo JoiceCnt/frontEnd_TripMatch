@@ -52,9 +52,6 @@ export default function TripMatchNavbar({
 
       {/* Center: nav buttons (Stories removido) */}
       <nav className="tm-nav" aria-label="Main navigation">
-        <NavLink to="/activities" className={linkClass}>
-          Activities
-        </NavLink>
         <NavLink to="/feed" className={linkClass}>
           Feed
         </NavLink>

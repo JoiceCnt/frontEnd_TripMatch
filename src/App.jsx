@@ -13,7 +13,6 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import TripsPage from "./pages/TripsPage";
 import Feed from "./pages/Feed";
-import Activities from "./pages/Activities";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage.jsx";
 
@@ -70,8 +69,7 @@ export default function App() {
           <Route path="/policy" element={<PolicyPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/trips" element={<TripsPage user={user} />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/activities" element={<Activities />} />
+          <Route path="/feed" element={<Feed />} />         
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route

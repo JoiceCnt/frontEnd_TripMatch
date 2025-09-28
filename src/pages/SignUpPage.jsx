@@ -1,6 +1,6 @@
 // src/pages/SignUpPage.jsx
 import { useState } from "react";
-import "./SignUpPage.css"; // Namespaced stylesheet
+import "./SignUpPage.css"; 
 import axios from "axios";
 
 export default function SignUpPage({ onSubmitForm }) {
@@ -74,7 +74,7 @@ export default function SignUpPage({ onSubmitForm }) {
   // Email básico
   const isValidEmail = (str) => /\S+@\S+\.\S+/.test(str);
 
-  // Submit
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
