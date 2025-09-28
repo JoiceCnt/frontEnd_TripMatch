@@ -1,7 +1,7 @@
 // AboutPage.jsx
 // About page styled to match your navbar palette and rounded-8 look.
 
-import "./AbautPage.css";
+import "./AboutPage.css";
 
 export default function AboutPage() {
   return (

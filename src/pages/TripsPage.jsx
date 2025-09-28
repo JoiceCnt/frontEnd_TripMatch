@@ -90,11 +90,6 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
   };
 
   const confirmSave = () => {
-    // Convert activities strings to objects with 'title' and default 'when'
-    //const activities = (draft.activities || []).map((a) => ({
-      //title: typeof a === "string" ? a : a.title || "Activity",
-     // when: a.when ? new Date(a.when) : new Date(),
-    //}));
 
     onSaveChanges(trip.id, {
       title: draft.title?.trim() || "Untitled trip",
@@ -104,7 +99,6 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
       startDate: new Date(draft.startDate),
       endDate: new Date(draft.endDate || draft.startDate),
       preferences: draft.preferences || [],
-      activities: draft.activities || [],
     });
     setEditing(false);
   };
@@ -226,39 +220,6 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
       </div>
 
       {/* DETAILS */}
-      <div className="trip-details">
-        <div className="activities">
-          <div className="panel-title">
-            <img className="icon-img" src={saveIcon} alt="" />
-            <span>Activities</span>
-          </div>
-          {!editing ? (
-            <div className="activity-list">
-              {trip.activities?.map((a, i) => (
-                <div className="activity-item" key={i}>
-                  {a.title}
-                </div>
-              ))}
-              {!trip.activities?.length && <div className="empty">No activities</div>}
-            </div>
-          ) : (
-            <textarea
-              value={(draft.activities || []).map(a => a.title || a).join("\n")}
-              onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  activities: e.target.value
-                    .split("\n")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                    .map((s) => ({ title: s, when: new Date() })),
-                })
-              }
-              placeholder="One activity per line"
-            />
-          )}
-        </div>
-
         <div className="preferences">
           <div className="panel-title">
             <img className="icon-img" src={editIcon} alt="" />
@@ -281,7 +242,6 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
           </ul>
         </div>
       </div>
-    </div>
   );
 }
 
@@ -398,7 +358,6 @@ export default function TripPage({ user = { id: "me" } }) {
         default: return null;
       }
     }).filter(Boolean),
-    activities: [],
     createdBy: user.id,
   };
 
