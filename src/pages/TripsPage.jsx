@@ -48,8 +48,9 @@ const toISOInput = (d) => {
   const dd = String(x.getDate()).padStart(2, "0");
   return `${x.getFullYear()}-${mm}-${dd}`;
 };
+//const fromDateInput = (value) => value;
 
-/* ===================== Section Header ===================== */
+/* ===================== UI helpers ===================== */
 function SectionHeader({ icon, label, right }) {
   return (
     <div className="trip-section-header">
@@ -90,10 +91,10 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
 
   const confirmSave = () => {
     // Convert activities strings to objects with 'title' and default 'when'
-    const activities = (draft.activities || []).map((a) => ({
-      title: typeof a === "string" ? a : a.title || "Activity",
-      when: a.when ? new Date(a.when) : new Date(),
-    }));
+    //const activities = (draft.activities || []).map((a) => ({
+      //title: typeof a === "string" ? a : a.title || "Activity",
+     // when: a.when ? new Date(a.when) : new Date(),
+    //}));
 
     onSaveChanges(trip.id, {
       title: draft.title?.trim() || "Untitled trip",
@@ -103,11 +104,10 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
       startDate: new Date(draft.startDate),
       endDate: new Date(draft.endDate || draft.startDate),
       preferences: draft.preferences || [],
-      activities,
+      activities: draft.activities || [],
     });
     setEditing(false);
   };
-
   const cancelEdit = () => {
     setDraft(trip);
     setEditing(false);
@@ -179,8 +179,8 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
           )}
         </div>
         <div className="trip-hero-right">
-          <button className="tm-btn ghost" onClick={pickImage}>
-            <img className="icon-img" src={uploadIcon} alt="" />
+          <button className="tm-btn ghost" onClick={pickImage} title="Upload">
+            <img className="icon-img" src={uploadIcon} alt="" aria-hidden />
             <span>Upload image</span>
           </button>
           <input
@@ -225,7 +225,7 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
         </div>
       </div>
 
-      {/* Details */}
+      {/* DETAILS */}
       <div className="trip-details">
         <div className="activities">
           <div className="panel-title">
@@ -290,6 +290,11 @@ export default function TripPage({ user = { id: "me" } }) {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const openShare = (trip) => {
+    alert(`Sharing trip: ${trip.title}`);
+  };
+
 
   // New trip form
   const [newTrip, setNewTrip] = useState({
@@ -457,43 +462,114 @@ const handleCityInput = (val) => {
     <main className="trip-page">
       {/* TOP TABS */}
       <div className="section-nav">
-        <button onClick={() => document.getElementById("section-active")?.scrollIntoView()}>
-          <img className="icon-img" src={tripIcon} alt="" /><span>Active trip</span>
+        <button
+          onClick={() =>
+            document.getElementById("section-active")?.scrollIntoView()
+          }
+        >
+          <img className="icon-img" src={tripIcon} alt="" />
+          <span>Active trip</span>
         </button>
-        <button onClick={() => document.getElementById("section-upcoming")?.scrollIntoView()}>
-          <img className="icon-img" src={upcomingIcon} alt="" /><span>Upcoming</span>
+        <button
+          onClick={() =>
+            document.getElementById("section-upcoming")?.scrollIntoView()
+          }
+        >
+          <img className="icon-img" src={upcomingIcon} alt="" />
+          <span>Upcoming</span>
         </button>
-        <button onClick={() => document.getElementById("section-past")?.scrollIntoView()}>
-          <img className="icon-img" src={pastIcon} alt="" /><span>Past</span>
+        <button
+          onClick={() =>
+            document.getElementById("section-past")?.scrollIntoView()
+          }
+        >
+          <img className="icon-img" src={pastIcon} alt="" />
+          <span>Past</span>
         </button>
-        {error && <div className="tm-alert error">Failed to load trips: {error}</div>}
-        <button onClick={() => document.getElementById("section-plan")?.scrollIntoView()}>
-          <img className="icon-img" src={planIcon} alt="" /><span>Plan</span>
+        <button
+          onClick={() =>
+            document.getElementById("section-plan")?.scrollIntoView()
+          }
+        >
+          {error && (
+            <div className="tm-alert error">Failed to load trips: {error}</div>
+          )}
+          <img className="icon-img" src={planIcon} alt="" />
+          <span>Plan</span>
         </button>
       </div>
 
       {/* ACTIVE */}
       <section id="section-active" className="trip-section">
-        <SectionHeader icon={tripIcon} label={`Active trip (${activeTrips.length})`} />
-        {activeTrips.length ? activeTrips.map(t => (
-          <TripCard key={t.id} trip={t} onShare={() => {}} onSaveChanges={updateTrip} onDeleteTrip={deleteTrip} />
-        )) : <div className="empty">No active trip</div>}
+        <SectionHeader
+          icon={tripIcon}
+          label={<span>Active trip ({activeTrips.length})</span>}
+        />
+        {activeTrips.length ? (
+          activeTrips.map((t) => (
+            <TripCard
+              key={t.id}
+              trip={t}
+              onShare={openShare}
+              onSaveChanges={updateTrip}
+              onDeleteTrip={deleteTrip}
+            />
+          ))
+        ) : (
+          <div className="empty">No active trip</div>
+        )}
       </section>
 
       {/* UPCOMING */}
       <section id="section-upcoming" className="trip-section">
-        <SectionHeader icon={upcomingIcon} label={`Upcoming (${upcomingTrips.length})`} />
-        {upcomingTrips.length ? upcomingTrips.map(t => (
-          <TripCard key={t.id} trip={t} onShare={() => {}} onSaveChanges={updateTrip} onDeleteTrip={deleteTrip} />
-        )) : <div className="empty">No upcoming trips</div>}
+        <SectionHeader
+          icon={upcomingIcon}
+          label={<span>Upcoming ({upcomingTrips.length})</span>}
+        />
+        {upcomingTrips.length ? (
+          upcomingTrips.map((t) => (
+            <TripCard
+              key={t.id}
+              trip={t}
+              onShare={openShare}
+              onSaveChanges={updateTrip}
+              onDeleteTrip={deleteTrip}
+            />
+          ))
+        ) : (
+          <div className="empty">No upcoming trips</div>
+        )}
       </section>
 
       {/* PAST */}
       <section id="section-past" className="trip-section">
-        <SectionHeader icon={tripIcon} label={`Past trips (${pastTrips.length})`} right={pastTrips.length ? <button className="tm-btn ghost" onClick={() => setPastCollapsed(v => !v)}>{pastCollapsed ? "Expand" : "Collapse"}</button> : null} />
-        {!pastTrips.length ? <div className="empty">No past trips</div> : pastCollapsed ? null : pastTrips.map(t => (
-          <TripCard key={t.id} trip={t} onShare={() => {}} onSaveChanges={updateTrip} onDeleteTrip={deleteTrip} />
-        ))}
+        <SectionHeader
+          icon={tripIcon}
+          label={<span>Past trips ({pastTrips.length})</span>}
+          right={
+            pastTrips.length ? (
+              <button
+                className="tm-btn ghost"
+                onClick={() => setPastCollapsed((v) => !v)}
+              >
+                {pastCollapsed ? "Expand" : "Collapse"}
+              </button>
+            ) : null
+          }
+        />
+        {!pastTrips.length ? (
+          <div className="empty">No past trips</div>
+        ) : pastCollapsed ? null : (
+          pastTrips.map((t) => (
+            <TripCard
+              key={t.id}
+              trip={t}
+              onShare={openShare}
+              onSaveChanges={updateTrip}
+              onDeleteTrip={deleteTrip}
+            />
+          ))
+        )}
       </section>
 
       {/* PLAN A NEW TRIP */}
