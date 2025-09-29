@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 
-/**
- * Profile Page
- * - Edit basic info (name, bio)
- * - Upload / preview profile picture
- * - Travel preferences (same enums you used in your Trip model)
- * - Favorite cities (comma-separated)
- *
- * TODO: Replace the mock save with your real API (fetch/axios).
- */
+
 export default function ProfilePage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -28,32 +20,38 @@ export default function ProfilePage() {
 
   // --- 1. Obtener datos del usuario al montar ---
   useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const res = await fetch("http://localhost:5005/api/users/me", {
-          credentials: "include", // si usas cookies/sesión
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) throw new Error("Error fetching profile");
-        const data = await res.json();
+  async function fetchProfile() {
+    try {
+      const token = localStorage.getItem("token"); // Obtenemos el token
 
-        // Rellenamos los estados
-        setName(data.name || "");
-        setBio(data.bio || "");
-        setPreferences(data.preferences || {});
-        setFavoriteCities(data.favoriteCities || "");
-        if (data.photoUrl) setPhotoPreview(data.photoUrl);
+      const res = await fetch("http://localhost:5005/api/users/me", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <-- añadimos el token
+        },
+      });
 
-        setLoading(false);
-      } catch (err) {
-        console.error("❌ Error cargando perfil:", err);
-        setError(err.message);
-        setLoading(false);
-      }
+      if (!res.ok) throw new Error("Error fetching profile");
+      const data = await res.json();
+
+      // Rellenamos los estados
+      setName(data.name || "");
+      setBio(data.bio || "");
+      setPreferences(data.preferences || {});
+      setFavoriteCities(data.favoriteCities || "");
+      if (data.photoUrl) setPhotoPreview(data.photoUrl);
+
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error cargando perfil:", err);
+      setError(err.message);
+      setLoading(false);
     }
+  }
 
-    fetchProfile();
-  }, []);
+  fetchProfile();
+}, []);
+
 
   // Handle photo file selection + preview
   function onPickPhoto(e) {
@@ -74,34 +72,37 @@ export default function ProfilePage() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Prepare payload (FormData if sending image to backend)
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("bio", bio);
-    formData.append("favoriteCities", favoriteCities);
-    formData.append("preferences", JSON.stringify(preferences));
-    if (photoFile) formData.append("photo", photoFile);
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("bio", bio);
+  formData.append("favoriteCities", favoriteCities);
+  formData.append("preferences", JSON.stringify(preferences));
+  if (photoFile) formData.append("photo", photoFile);
 
-    try {
-        const res = await fetch("http://localhost:3000/api/users/me", {
-        method: "PUT",
-        body: formData,
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to save profile");
+  try {
+    const token = localStorage.getItem("token"); // Obtenemos el token
 
-      const data = await res.json();
-      alert("✅ Profile saved!");
+    const res = await fetch("http://localhost:5005/api/users/me", {
+      method: "PUT",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`, // <-- añadimos token
+      },
+    });
 
-      // opcional: refrescar el preview desde backend
-      if (data.photoUrl) setPhotoPreview(data.photoUrl);
-    } catch (err) {
-      console.error("❌ Error guardando perfil:", err);
-      alert("Failed to savev profile.");
-    }
+    if (!res.ok) throw new Error("Failed to save profile");
+    const data = await res.json();
+
+    alert("✅ Profile saved!");
+    if (data.photoUrl) setPhotoPreview(data.photoUrl);
+  } catch (err) {
+    console.error("❌ Error guardando perfil:", err);
+    alert("Failed to save profile.");
   }
+}
+
 
   if (loading) return <p>Loading profile...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;

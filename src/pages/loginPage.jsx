@@ -30,7 +30,7 @@ const handleSubmit = async (e) => {
   }
   try {
     setLoading(true);
-    const base = import.meta.env.VITE_API_URL || "http://localhost:5005";
+    const base = import.meta.env.VITE_API_URL;
     const res = await axios.post(`${base}/api/auth/login`, {
       email: form.email,
       password: form.password,
