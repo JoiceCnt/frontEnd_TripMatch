@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./LoginPage.css";
-import axios from "axios";
 
 export default function LoginPage({ onLogin }) {
   // Local form state
@@ -20,39 +19,50 @@ export default function LoginPage({ onLogin }) {
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  if (!form.email || !form.password) {
-    setError("Please fill in Email and Password.");
-    return;
-  }
-  try {
-    setLoading(true);
-    const base = import.meta.env.VITE_API_URL;
-    const res = await axios.post(`${base}/api/auth/login`, {
-      email: form.email,
-      password: form.password,
-    });
-
-    const { token, user } = res.data;
-    if (!token) {
-      setError("No token received from server.");
+    if (!form.email || !form.password) {
+      setError("Please fill in Email and Password.");
       return;
     }
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    onLogin(user);
-    
-  } catch (err) {
-    setError(err.response?.data?.message || "Network error. Please try again.");
-    console.log(err);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const base = "http://localhost:5005"; // tu backend
+
+      // Petición con fetch
+      const response = await fetch(`${base}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+
+      const data = await response.json();
+      console.log("Login fetch response:", data);
+
+      // Manejo de errores del backend
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Guardar token y usuario en localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      onLogin(data.user);
+
+      // Limpiar form si quieres
+      setForm({ email: "", password: "", remember: false });
+
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="tm-login">
