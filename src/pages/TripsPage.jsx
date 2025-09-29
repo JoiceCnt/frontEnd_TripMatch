@@ -282,9 +282,8 @@ export default function TripPage({ user = { id: "me" } }) {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await axios.get("http://localhost:5005/api/trips", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: getAuthHeaders()
         });
         setTrips(res.data);
       } catch (err) {
@@ -325,16 +324,20 @@ export default function TripPage({ user = { id: "me" } }) {
       }
     };
     fetchCities();
-  }, [newTrip.country]);
+  }, [newTrip.country, newTrip.countryCode]);
+
+  const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   /* ---------------- CRUD handlers ---------------- */
   const updateTrip = async (id, payload) => {
   try {
-    const token = localStorage.getItem("token");
     const res = await axios.put(
       `http://localhost:5005/api/trips/${id}`,
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: getAuthHeaders() }
     );
       setTrips(prev => prev.map(t => t.id === id ? res.data : t));
     } catch (err) {
@@ -345,9 +348,8 @@ export default function TripPage({ user = { id: "me" } }) {
 
   const deleteTrip = async (id) => {
   try {
-    const token = localStorage.getItem("token");
-    await axios.delete(`http://localhost:5005/api/trips/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      await axios.delete(`http://localhost:5005/api/trips/${id}`, {
+      headers: getAuthHeaders()
     });
       setTrips(prev => prev.filter(t => t.id !== id));
     } catch (err) {
@@ -363,7 +365,7 @@ export default function TripPage({ user = { id: "me" } }) {
     const res = await axios.post(
       "http://localhost:5005/api/trips",
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: getAuthHeaders() }
     );
     setTrips((prev) => [res.data, ...prev]);
   } catch (err) {

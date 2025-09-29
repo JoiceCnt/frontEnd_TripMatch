@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./LoginPage.css";
+import axios from "axios";
 
 export default function LoginPage({ onLogin }) {
   // Local form state
@@ -19,39 +20,39 @@ export default function LoginPage({ onLogin }) {
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  // Minimal email validation helper
-  const isValidEmail = (str) => /\S+@\S+\.\S+/.test(str);
 
-  // Submit handler (replace with your real API call)
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  if (!form.email || !form.password) {
+    setError("Please fill in Email and Password.");
+    return;
+  }
+  try {
+    setLoading(true);
+    const base = import.meta.env.VITE_API_URL || "http://localhost:5005";
+    const res = await axios.post(`${base}/api/auth/login`, {
+      email: form.email,
+      password: form.password,
+    });
 
-    if (!form.email || !form.password) {
-      setError("Please fill in Email and Password.");
+    const { token, user } = res.data;
+    if (!token) {
+      setError("No token received from server.");
       return;
     }
-    if (!isValidEmail(form.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
 
-    try {
-      setLoading(true);
-
-      // Example (replace with your endpoint):
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {...});
-      // const data = await res.json();
-      // if (!res.ok) return setError(data?.message || "Invalid email or password.");
-
-      onLogin(form); // notify parent/app
-    } catch (err) {
-      setError("Network error. Please try again.");
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    onLogin(user);
+    
+  } catch (err) {
+    setError(err.response?.data?.message || "Network error. Please try again.");
+    console.log(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="tm-login">

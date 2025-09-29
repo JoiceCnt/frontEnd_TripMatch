@@ -128,7 +128,12 @@ export default function SignUpPage({ onSubmitForm }) {
         "http://localhost:5005/api/auth/register",
         form
       );
-      console.log(response);
+      const { token, user } = response.data || {};
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        onSubmitForm?.(user); // o redirige / mostrar success
+      }
       setSuccess("Account created successfully!");
 
       // (Opcional) Resetar formulário
