@@ -9,6 +9,7 @@ export default function LoginPage({ onLogin }) {
     password: "",
     remember: false,
   });
+
   // Feedback state
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,32 +31,36 @@ export default function LoginPage({ onLogin }) {
 
     try {
       setLoading(true);
-      const base = "http://localhost:5005"; // tu backend
+      const base = "http://localhost:5005"; // ⚡️ tu backend local
 
+      console.log("Form before login:", form);
       // Petición con fetch
       const response = await fetch(`${base}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
       });
 
       const data = await response.json();
       console.log("Login fetch response:", data);
 
-      // Manejo de errores del backend
       if (!response.ok) {
         setError(data.message || "Login failed");
         return;
       }
 
-      // Guardar token y usuario en localStorage
+      // Guardar token + user en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Avisar al padre que ya está logueado
       onLogin(data.user);
 
-      // Limpiar form si quieres
+      // Reset form
       setForm({ email: "", password: "", remember: false });
-
     } catch (err) {
       console.error("Login error:", err);
       setError("Network error. Please try again.");
