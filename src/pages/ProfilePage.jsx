@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 
-
 export default function ProfilePage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -20,38 +19,37 @@ export default function ProfilePage() {
 
   // --- 1. Obtener datos del usuario al montar ---
   useEffect(() => {
-  async function fetchProfile() {
-    try {
-      const token = localStorage.getItem("token"); // Obtenemos el token
+    async function fetchProfile() {
+      try {
+        const token = localStorage.getItem("token"); // Obtenemos el token
 
-      const res = await fetch("http://localhost:5005/api/users/me", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // <-- añadimos el token
-        },
-      });
+        const res = await fetch("http://localhost:5005/api/users/me", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // <-- añadimos el token
+          },
+        });
 
-      if (!res.ok) throw new Error("Error fetching profile");
-      const data = await res.json();
+        if (!res.ok) throw new Error("Error fetching profile");
+        const data = await res.json();
 
-      // Rellenamos los estados
-      setName(data.name || "");
-      setBio(data.bio || "");
-      setPreferences(data.preferences || {});
-      setFavoriteCities(data.favoriteCities || "");
-      if (data.photoUrl) setPhotoPreview(data.photoUrl);
+        // Rellenamos los estados
+        setName(data.name || "");
+        setBio(data.bio || "");
+        setPreferences(data.preferences || {});
+        setFavoriteCities(data.favoriteCities || "");
+        if (data.photo) setPhotoPreview(data.photo);
 
-      setLoading(false);
-    } catch (err) {
-      console.error("❌ Error cargando perfil:", err);
-      setError(err.message);
-      setLoading(false);
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Error cargando perfil:", err);
+        setError(err.message);
+        setLoading(false);
+      }
     }
-  }
 
-  fetchProfile();
-}, []);
-
+    fetchProfile();
+  }, []);
 
   // Handle photo file selection + preview
   function onPickPhoto(e) {
@@ -72,37 +70,40 @@ export default function ProfilePage() {
   }
 
   async function handleSubmit(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("bio", bio);
-  formData.append("favoriteCities", favoriteCities);
-  formData.append("preferences", JSON.stringify(preferences));
-  if (photoFile) formData.append("photo", photoFile);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("bio", bio);
+    formData.append("favoriteCities", favoriteCities);
+    formData.append("preferences", JSON.stringify(preferences));
 
-  try {
-    const token = localStorage.getItem("token"); // Obtenemos el token
+    if (photoFile) {
+      // se usuário subiu nova foto → envia o arquivo
+      formData.append("photo", photoFile);
+    }
 
-    const res = await fetch("http://localhost:5005/api/users/me", {
-      method: "PUT",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${token}`, // <-- añadimos token
-      },
-    });
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!res.ok) throw new Error("Failed to save profile");
-    const data = await res.json();
+      const res = await fetch("http://localhost:5005/api/users/me", {
+        method: "PUT",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    alert("✅ Profile saved!");
-    if (data.photoUrl) setPhotoPreview(data.photoUrl);
-  } catch (err) {
-    console.error("❌ Error guardando perfil:", err);
-    alert("Failed to save profile.");
+      if (!res.ok) throw new Error("Failed to save profile");
+      const data = await res.json();
+
+      alert("✅ Profile saved!");
+      if (data.photo) setPhotoPreview(data.photo); // atualiza preview
+    } catch (err) {
+      console.error("❌ Error guardando perfil:", err);
+      alert("Failed to save profile.");
+    }
   }
-}
-
 
   if (loading) return <p>Loading profile...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;

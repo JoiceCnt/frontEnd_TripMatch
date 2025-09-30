@@ -6,6 +6,7 @@ import "./TripMatchNavbar.css";
 export default function TripMatchNavbar({
   variant = "home",
   isAuthenticated = false,
+  user = {}, // <── Novo: recebemos user
   onLoginClick,
   onLogout,
 }) {
@@ -13,12 +14,14 @@ export default function TripMatchNavbar({
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
+  console.log("User in Navbar:", user);
   useEffect(() => {
     function onDocClick(e) {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target)) setOpen(false);
     }
     document.addEventListener("click", onDocClick);
+
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
@@ -34,7 +37,7 @@ export default function TripMatchNavbar({
   };
 
   const linkClass = ({ isActive }) => `tm-navbtn${isActive ? " active" : ""}`;
-
+  console.log("Navbar user:", user);
   return (
     <header className="tm-navbar" role="banner" aria-label="Primary">
       {/* Left: brand */}
@@ -50,7 +53,7 @@ export default function TripMatchNavbar({
         />
       </button>
 
-      {/* Center: nav buttons (Stories removido) */}
+      {/* Center: nav buttons */}
       <nav className="tm-nav" aria-label="Main navigation">
         <NavLink to="/feed" className={linkClass}>
           Feed
@@ -71,15 +74,23 @@ export default function TripMatchNavbar({
             Log In
           </button>
         ) : (
-          <div className="tm-user" ref={menuRef}>
+          <div className="tm-avatar-wrapper" ref={menuRef}>
             <button
               className="tm-avatar-btn"
               aria-haspopup="menu"
               aria-expanded={open}
               onClick={() => setOpen((o) => !o)}
             >
-              <img src="/icons/user-dark.svg" alt="" />
+              <img
+                src={
+                  user.photo ||
+                  "https://raw.githubusercontent.com/feathericons/feather/master/icons/user.svg"
+                }
+                alt="User avatar"
+                className="tm-avatar-img"
+              />
             </button>
+            <span className="tm-hello">Hello, {user.name || "Traveler"}!</span>
 
             {open && (
               <div className="tm-menu" role="menu">

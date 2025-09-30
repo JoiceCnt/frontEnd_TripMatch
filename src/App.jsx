@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import TripMatchNavbar from "./components/TripMatchNavbar";
@@ -9,7 +9,7 @@ import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import AboutPage from "./pages/AboutPage";
-import LoginPage from "./pages/loginPage";
+import LoginPage from "./pages/LoginPage.jsx";
 import SignUpPage from "./pages/SignUpPage";
 import TripsPage from "./pages/TripsPage";
 import Feed from "./pages/Feed";
@@ -27,6 +27,14 @@ export default function App() {
 
   const isHome = location.pathname === "/";
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUser({ photo: "" });
@@ -39,9 +47,9 @@ export default function App() {
       <TripMatchNavbar
         variant={isHome ? "home" : "internal"}
         isAuthenticated={isLoggedIn}
+        user={user} // <── passa o objeto inteiro
         onLoginClick={() => navigate("/login")}
         onLogout={handleLogout}
-        avatarUrl={user?.photo}
       />
 
       <main className="tm-main">

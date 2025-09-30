@@ -175,3 +175,36 @@
   object-fit: contain;
   flex: 0 0 auto;
 }
+.tm-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espaço entre foto e texto */
+  position: relative;
+}
+
+.tm-avatar-btn {
+  width: 48px; /* tamanho fixo do círculo */
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* corta qualquer parte da imagem fora do círculo */
+}
+
+.tm-avatar-img {
+  width: 100%; /* ocupa todo o círculo */
+  height: 100%;
+  object-fit: cover; /* mantém proporção e cobre o espaço */
+  border-radius: 50%;
+}
+
+.tm-hello {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1c3739;
+}
