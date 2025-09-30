@@ -2,9 +2,10 @@
 import { useState } from "react";
 import "./SignUpPage.css"; 
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUpPage({ onSubmitForm }) {
-  // Campos do formulário (inclui os do ProfilePage)
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     surname: "",
@@ -13,8 +14,6 @@ export default function SignUpPage({ onSubmitForm }) {
     password: "",
     terms: false,
     marketing: false,
-
-    // ----- novos / alinhados ao ProfilePage -----
     bio: "",
     favoriteCities: "",
     preferences: {
@@ -95,7 +94,6 @@ export default function SignUpPage({ onSubmitForm }) {
     }
 
     try {
-      // Se o backend aceitar upload de imagem no signup, use FormData:
       const fd = new FormData();
       fd.append("name", form.name);
       fd.append("surname", form.surname);
@@ -104,26 +102,16 @@ export default function SignUpPage({ onSubmitForm }) {
       fd.append("password", form.password);
       fd.append("terms", String(form.terms));
       fd.append("marketing", String(form.marketing));
-
-      // Campos do "Profile"
       fd.append("bio", form.bio);
       fd.append("favoriteCities", form.favoriteCities);
       fd.append("preferences", JSON.stringify(form.preferences));
       if (photoFile) fd.append("photo", photoFile);
 
-      // 👉 Substitua pelo seu endpoint real quando quiser conectar:
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`, {
-      //   method: "POST",
-      //   body: fd,
-      // });
-      // if (!res.ok) throw new Error("Failed to create account");
-      // const data = await res.json();
-
-      // Avisar o pai (sem quebrar quem já usa onSubmitForm)
       onSubmitForm?.({
         ...form,
         hasPhoto: Boolean(photoFile),
       });
+
       const response = await axios.post(
         "http://localhost:5005/api/auth/register",
         form
@@ -131,18 +119,12 @@ export default function SignUpPage({ onSubmitForm }) {
       console.log(response);
       setSuccess("Account created successfully!");
 
-      // (Opcional) Resetar formulário
-      // setForm({
-      //   name: "", surname: "", email: "", gender: "male", password: "",
-      //   terms: false, marketing: false, bio: "", favoriteCities: "",
-      //   preferences: { nature:false, concerts_and_events:false, gastronomy:false, touristic_places:false }
-      // });
-      // setPhotoFile(null);
-      // setPhotoPreview("");
+      navigate("/login");
+
     } catch (err) {
-      console.log(err);
-      setError(err?.message || "Something went wrong.");
-    }
+     console.log(err);
+     setError(err?.message || "Something went wrong.");
+   }
   };
 
   return (
@@ -355,9 +337,11 @@ export default function SignUpPage({ onSubmitForm }) {
         {success && <p className="tm-success">{success}</p>}
 
         {/* CTA */}
-        <button className="tm-cta" type="submit" aria-label="Create an Account">
-          Create an Account
-        </button>
+        
+          <button className="tm-cta" type="submit" aria-label="Create an Account">
+            Create an Account
+          </button>
+      
       </form>
     </div>
   );
