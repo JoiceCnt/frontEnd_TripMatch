@@ -62,7 +62,7 @@ export default function Feed({ currentUser = demoUser }) {
       .catch(console.error);
   }, []);
 
-  // Apply route background class when this page is mounted
+  // aplica o fundo da rota e padding fluido do container
   useEffect(() => {
     document.body.classList.add("feed-route");
     return () => document.body.classList.remove("feed-route");
@@ -487,59 +487,182 @@ function Composer({ onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit?.(value);
-    setValue("");
+    if (!canPost) return;
+    onSubmit(text);
+    setText("");
   };
 
   return (
-    <section style={{ width: "min(800px,92%)", margin: "20px auto" }}>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 14,
-          padding: 16,
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        <label htmlFor="composer" style={{ fontWeight: 600 }}>
-          Create a post
-        </label>
-        <textarea
-          id="composer"
-          rows={3}
-          placeholder="What's on your mind?"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          style={{
-            width: "100%",
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            padding: 12,
-            resize: "vertical",
-            outline: "none",
-          }}
+    <form className="tm-composer" onSubmit={submit}>
+      <button type="button" className="tm-avatar-btn" title="Your profile">
+        <img
+          src={currentUser.photo || defaultAvatar}
+          alt="Your profile"
+          className="tm-avatar"
         />
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button type="submit" className="primary-btn">
-            Post
-          </button>
-        </div>
-      </form>
-    </section>
+      </button>
+      <div className="tm-composer-main">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Share your plan, invite others, ask for tips..."
+          rows={3}
+        />
+      </div>
+      <div className="tm-composer-actions">
+        <button type="submit" className="tm-btn" disabled={!canPost}>
+          Post
+        </button>
+      </div>
+    </form>
   );
 }
 
-// Minimal inline comment input
-function InlineComment({ onSubmit }) {
-  const [txt, setTxt] = useState("");
+function PostCard({
+  post,
+  currentUser,
+  onAvatarClick,
+  onLike,
+  onUpdate,
+  onDelete,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onCommentAvatarClick,
+}) {
+  const isOwner = currentUser?.id === post.author.id;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.text);
 
-  const send = (e) => {
+  const saveEdit = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    onUpdate({ text: trimmed });
+    setEditing(false);
+  };
+
+  return (
+    <li className="tm-post">
+      <div className="tm-post-head">
+        <button
+          className="tm-avatar-btn"
+          onClick={onAvatarClick}
+          title="Open profile"
+        >
+          <img
+            src={post.author.photo || defaultAvatar}
+            alt={post.author.name}
+            className="tm-avatar"
+          />
+        </button>
+        <div className="tm-author">
+          <button
+            className="tm-author-link"
+            onClick={onAvatarClick}
+            title="Open profile"
+          >
+            <strong>{post.author.name}</strong>
+          </button>
+          <span className="tm-time">
+            {new Date(post.createdAt).toLocaleString()}
+            {post.updatedAt ? " · edited" : ""}
+          </span>
+        </div>
+        <div className="tm-post-ops">
+          {isOwner && !editing && (
+            <>
+              <button
+                className="tm-link"
+                onClick={() => setEditing(true)}
+                title="Edit post"
+              >
+                Edit
+              </button>
+              <button
+                className="tm-link danger"
+                onClick={() =>
+                  window.confirm("Delete this post?") && onDelete()
+                }
+                title="Delete post"
+              >
+                Delete
+              </button>
+            </>
+          )}
+          {editing && (
+            <>
+              <button className="tm-link" onClick={saveEdit} title="Save">
+                Save
+              </button>
+              <button
+                className="tm-link"
+                onClick={() => {
+                  setEditing(false);
+                  setDraft(post.text);
+                }}
+                title="Cancel"
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {!editing ? (
+        <p className="tm-post-text">{post.text}</p>
+      ) : (
+        <textarea
+          className="tm-edit-area"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          rows={3}
+        />
+      )}
+
+      <div className="tm-post-actions">
+        <button
+          className="tm-action"
+          onClick={onLike}
+          aria-label="Like post"
+          title="Like"
+        >
+          ♥ {post.likes}
+        </button>
+        <span className="tm-divider" />
+        <span className="tm-action" title="Comments">
+          💬 {post.comments.length}
+        </span>
+      </div>
+
+      <Comments
+        comments={post.comments}
+        currentUser={currentUser}
+        onAdd={onAddComment}
+        onUpdate={onUpdateComment}
+        onDelete={onDeleteComment}
+        onAvatarClick={onCommentAvatarClick}
+      />
+    </li>
+  );
+}
+
+/** Comentários (cada item é um componente — hooks no topo) */
+function Comments({
+  comments,
+  currentUser,
+  onAdd,
+  onUpdate,
+  onDelete,
+  onAvatarClick,
+}) {
+  const [text, setText] = useState("");
+  const submit = (e) => {
     e.preventDefault();
-    onSubmit?.(txt);
-    setTxt("");
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onAdd(trimmed);
+    setText("");
   };
 
   return (
@@ -795,7 +918,7 @@ function RangePicker({ value, onChange, label = "Start date — End date" }) {
   const end = value.endDate ? new Date(value.endDate) : new Date();
 
   return (
-    <div style={{ position: "relative" }} ref={ref}>
+    <div className="tm-comment">
       <button
         type="button"
         className="date-range"

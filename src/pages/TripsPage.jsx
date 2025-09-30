@@ -1,3 +1,4 @@
+// src/pages/TripsPage.jsx
 import { useState, useEffect, useMemo, useRef } from "react";
 import "./Trips.css";
 import axios from "axios";
@@ -47,6 +48,7 @@ const toISOInput = (d) => {
   const dd = String(x.getDate()).padStart(2, "0");
   return `${x.getFullYear()}-${mm}-${dd}`;
 };
+//const fromDateInput = (value) => value;
 
 /* ===================== UI helpers ===================== */
 function SectionHeader({ icon, label, right }) {
@@ -61,25 +63,9 @@ function SectionHeader({ icon, label, right }) {
   );
 }
 
-/* ===================== Upload Helper ===================== */
-const uploadImageToServer = async (file) => {
-  const formData = new FormData();
-  formData.append("imageUrl", file); // precisa bater com o multer.single("imageUrl")
-
-  try {
-    const res = await axios.post("http://localhost:5005/api/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res.data.imageUrl;
-  } catch (err) {
-    console.error("Erro ao subir imagem:", err);
-    return null;
-  }
-};
-
 /* ===================== TripCard ===================== */
 function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
-  const [bgImage, setBgImage] = useState(trip.imageUrl || null);
+  const [bgImage, setBgImage] = useState(null);
   const inputRef = useRef(null);
 
   const [editing, setEditing] = useState(false);
@@ -87,62 +73,111 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
   useEffect(() => setDraft(trip), [trip]);
 
   const pickImage = () => inputRef.current?.click();
-
-  const onFileChange = async (e) => {
+  const onFileChange = (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
-
-    const url = await uploadImageToServer(f);
-
-    if (url) {
-      setBgImage(url);
-      onSaveChanges(trip.id, { ...trip, imageUrl: url });
-    }
-
+    const url = URL.createObjectURL(f);
+    setBgImage(url);
     e.target.value = "";
+  };
+
+  const togglePref = (p) => {
+    const has = draft.preferences?.includes(p);
+    const prefs = has
+      ? draft.preferences.filter((x) => x !== p)
+      : [...(draft.preferences || []), p];
+    setDraft({ ...draft, preferences: prefs });
+  };
+
+  const confirmSave = () => {
+    onSaveChanges(trip.id, {
+      title: draft.title?.trim() || "Untitled trip",
+      city: draft.city?.trim() || "",
+      country: draft.country?.trim() || "",
+      countryCode: draft.countryCode?.trim() || "",
+      startDate: new Date(draft.startDate),
+      endDate: new Date(draft.endDate || draft.startDate),
+      preferences: draft.preferences || [],
+    });
+    setEditing(false);
+  };
+  const cancelEdit = () => {
+    setDraft(trip);
+    setEditing(false);
   };
 
   return (
     <div className="trip-card">
-      {/* HEADER COM BACKGROUND */}
       <div
-        className="trip-card-header"
-        style={{
-          backgroundImage:
-            bgImage || trip.imageUrl
-              ? `url(${bgImage || trip.imageUrl})`
-              : "none",
-        }}
+        className="trip-hero"
+        style={{ backgroundImage: bgImage ? `url(${bgImage})` : "none" }}
       >
-        <div className="trip-card-overlay" />
-
-        {/* LEFT: infos da viagem */}
-        <div className="trip-card-info">
+        {bgImage && <div className="trip-hero-scrim" aria-hidden />}
+        <div className="trip-hero-left">
           {editing ? (
-            <input
-              className="trip-title-input"
-              value={draft.title || ""}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder="Trip title"
-            />
+            <>
+              <input
+                className="trip-title-input"
+                value={draft.title || ""}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                placeholder="Trip title"
+              />
+              <div className="trip-meta">
+                <input
+                  className="meta-input"
+                  value={draft.city || ""}
+                  onChange={(e) => setDraft({ ...draft, city: e.target.value })}
+                  placeholder="City"
+                />
+                <span className="dot" />
+                <input
+                  className="meta-input"
+                  value={draft.country || ""}
+                  onChange={(e) =>
+                    setDraft({ ...draft, country: e.target.value })
+                  }
+                  placeholder="Country"
+                />
+                <span className="dot" />
+                <span className="date-row">
+                  <input
+                    type="date"
+                    value={toISOInput(draft.startDate)}
+                    onChange={(e) =>
+                      setDraft({ ...draft, startDate: e.target.value })
+                    }
+                  />
+                  <span>→</span>
+                  <input
+                    type="date"
+                    value={toISOInput(draft.endDate || draft.startDate)}
+                    onChange={(e) =>
+                      setDraft({ ...draft, endDate: e.target.value })
+                    }
+                  />
+                </span>
+              </div>
+            </>
           ) : (
-            <h3 className="trip-title">{trip.title}</h3>
+            <>
+              <h3 className="trip-title">{trip.title}</h3>
+              <div className="trip-meta">
+                <span>
+                  {trip.city}, {trip.country}
+                </span>
+                <span className="dot" />
+                <span>
+                  From {toISOInput(trip.startDate)} to{" "}
+                  {toISOInput(trip.endDate)}
+                </span>
+              </div>
+            </>
           )}
-          <div className="trip-meta">
-            <span>
-              {trip.city}, {trip.country}
-            </span>
-            <span className="dot" />
-            <span>
-              From {toISOInput(trip.startDate)} to {toISOInput(trip.endDate)}
-            </span>
-          </div>
         </div>
-
-        {/* RIGHT: botões */}
-        <div className="trip-card-actions">
-          <button className="tm-btn ghost" onClick={pickImage}>
-            <img className="icon-img" src={uploadIcon} alt="" />
+        <div className="trip-hero-right">
+          <button className="tm-btn ghost" onClick={pickImage} title="Upload">
+            <img className="icon-img" src={uploadIcon} alt="" aria-hidden />
+            <span>Upload image</span>
           </button>
           <input
             ref={inputRef}
@@ -151,63 +186,64 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
             accept="image/*"
             onChange={onFileChange}
           />
-
-          <button
-            className="tm-btn ghost"
-            onClick={() => setEditing((v) => !v)}
-          >
-            <img className="icon-img" src={editIcon} alt="" />
-          </button>
-
-          <button className="tm-btn ghost" onClick={() => onShare(trip)}>
-            <img className="icon-img" src={shareIcon} alt="" />
-          </button>
-
-          <button
-            className="tm-btn ghost"
-            onClick={() => onDeleteTrip(trip.id)}
-          >
-            <img className="icon-img" src={deleteIcon} alt="" />
-          </button>
+          {!editing ? (
+            <>
+              <button className="tm-btn" onClick={() => onShare(trip)}>
+                <img className="icon-img" src={shareIcon} alt="" aria-hidden />
+                <span>Share</span>
+              </button>
+              <button className="tm-btn ghost" onClick={() => setEditing(true)}>
+                <img className="icon-img" src={editIcon} alt="" aria-hidden />
+                <span>Update</span>
+              </button>
+              <button
+                className="tm-btn ghost"
+                onClick={() => onDeleteTrip(trip.id)}
+              >
+                <img className="icon-img" src={deleteIcon} alt="" aria-hidden />
+                <span>Delete</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="tm-btn ghost" onClick={cancelEdit}>
+                Cancel
+              </button>
+              <button className="tm-btn" onClick={confirmSave}>
+                <img className="icon-img" src={saveIcon} alt="" aria-hidden />
+                <span>Save</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* BODY */}
-      <div className="trip-card-body">
-        <div className="preferences">
-          <div className="panel-title">
-            <img className="icon-img" src={editIcon} alt="" />
-            <span>Preferences</span>
-          </div>
-          <ul className="pref-list">
-            {[
-              "nature",
-              "concerts_and_events",
-              "gastronomy",
-              "touristic_places",
-            ].map((p) => (
-              <li key={p}>
-                <label className="pref-check">
-                  <input
-                    type="checkbox"
-                    checked={draft.preferences?.includes(p) || false}
-                    onChange={() =>
-                      editing &&
-                      setDraft({
-                        ...draft,
-                        preferences: draft.preferences?.includes(p)
-                          ? draft.preferences.filter((x) => x !== p)
-                          : [...(draft.preferences || []), p],
-                      })
-                    }
-                    readOnly={!editing}
-                  />
-                  <span>{p.replace(/_/g, " ")}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
+      {/* DETAILS */}
+      <div className="preferences">
+        <div className="panel-title">
+          <img className="icon-img" src={editIcon} alt="" />
+          <span>Preferences</span>
         </div>
+        <ul className="pref-list">
+          {[
+            "nature",
+            "concerts_and_events",
+            "gastronomy",
+            "touristic_places",
+          ].map((p) => (
+            <li key={p}>
+              <label className="pref-check">
+                <input
+                  type="checkbox"
+                  checked={draft.preferences?.includes(p) || false}
+                  onChange={() => editing && togglePref(p)}
+                  readOnly={!editing}
+                />
+                <span>{p.replace(/_/g, " ")}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
@@ -328,6 +364,8 @@ export default function TripPage({ user = { id: "me" } }) {
 
   const addTrip = async (payload) => {
     try {
+      const token = localStorage.getItem("token");
+      console.log("Token from localStorage:", token);
       const res = await axios.post("http://localhost:5005/api/trips", payload, {
         headers: getAuthHeaders(),
       });
@@ -379,6 +417,7 @@ export default function TripPage({ user = { id: "me" } }) {
 
     await addTrip(payload);
 
+    // Reset form
     setNewTrip({
       country: "",
       countryCode: "",
