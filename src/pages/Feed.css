@@ -283,3 +283,12 @@
   width: min(800px, 92%);
   margin: 20px auto;
 }
+.tm-comment-meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.tm-comment-time {
+  font-size: 12px;
+  color: #64748b;
+}

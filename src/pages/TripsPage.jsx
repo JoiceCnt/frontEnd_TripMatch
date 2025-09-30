@@ -90,7 +90,6 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
   };
 
   const confirmSave = () => {
-
     onSaveChanges(trip.id, {
       title: draft.title?.trim() || "Untitled trip",
       city: draft.city?.trim() || "",
@@ -134,7 +133,9 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
                 <input
                   className="meta-input"
                   value={draft.country || ""}
-                  onChange={(e) => setDraft({ ...draft, country: e.target.value })}
+                  onChange={(e) =>
+                    setDraft({ ...draft, country: e.target.value })
+                  }
                   placeholder="Country"
                 />
                 <span className="dot" />
@@ -166,7 +167,8 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
                 </span>
                 <span className="dot" />
                 <span>
-                  From {toISOInput(trip.startDate)} to {toISOInput(trip.endDate)}
+                  From {toISOInput(trip.startDate)} to{" "}
+                  {toISOInput(trip.endDate)}
                 </span>
               </div>
             </>
@@ -190,10 +192,7 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
                 <img className="icon-img" src={shareIcon} alt="" aria-hidden />
                 <span>Share</span>
               </button>
-              <button
-                className="tm-btn ghost"
-                onClick={() => setEditing(true)}
-              >
+              <button className="tm-btn ghost" onClick={() => setEditing(true)}>
                 <img className="icon-img" src={editIcon} alt="" aria-hidden />
                 <span>Update</span>
               </button>
@@ -220,28 +219,33 @@ function TripCard({ trip, onShare, onSaveChanges, onDeleteTrip }) {
       </div>
 
       {/* DETAILS */}
-        <div className="preferences">
-          <div className="panel-title">
-            <img className="icon-img" src={editIcon} alt="" />
-            <span>Preferences</span>
-          </div>
-          <ul className="pref-list">
-            {["nature", "concerts_and_events", "gastronomy", "touristic_places"].map((p) => (
-              <li key={p}>
-                <label className="pref-check">
-                  <input
-                    type="checkbox"
-                    checked={draft.preferences?.includes(p) || false}
-                    onChange={() => editing && togglePref(p)}
-                    readOnly={!editing}
-                  />
-                  <span>{p.replace(/_/g, " ")}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
+      <div className="preferences">
+        <div className="panel-title">
+          <img className="icon-img" src={editIcon} alt="" />
+          <span>Preferences</span>
         </div>
+        <ul className="pref-list">
+          {[
+            "nature",
+            "concerts_and_events",
+            "gastronomy",
+            "touristic_places",
+          ].map((p) => (
+            <li key={p}>
+              <label className="pref-check">
+                <input
+                  type="checkbox"
+                  checked={draft.preferences?.includes(p) || false}
+                  onChange={() => editing && togglePref(p)}
+                  readOnly={!editing}
+                />
+                <span>{p.replace(/_/g, " ")}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       </div>
+    </div>
   );
 }
 
@@ -254,7 +258,6 @@ export default function TripPage({ user = { id: "me" } }) {
   const openShare = (trip) => {
     alert(`Sharing trip: ${trip.title}`);
   };
-
 
   // New trip form
   const [newTrip, setNewTrip] = useState({
@@ -282,9 +285,8 @@ export default function TripPage({ user = { id: "me" } }) {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await axios.get("http://localhost:5005/api/trips", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: getAuthHeaders(),
         });
         setTrips(res.data);
       } catch (err) {
@@ -296,12 +298,13 @@ export default function TripPage({ user = { id: "me" } }) {
     fetchTrips();
   }, []);
 
-
   /* ---------------- Fetch countries ---------------- */
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await axios.get(`${CSC_API_URL}/countries`, { headers: HEADERS });
+        const res = await axios.get(`${CSC_API_URL}/countries`, {
+          headers: HEADERS,
+        });
         setCountries(res.data);
       } catch (err) {
         console.error("Failed to fetch countries", err);
@@ -316,7 +319,7 @@ export default function TripPage({ user = { id: "me" } }) {
     const fetchCities = async () => {
       try {
         const res = await axios.get(
-          `${CSC_API_URL}/countries/${newTrip.country}/cities`,
+          `${CSC_API_URL}/countries/${newTrip.countryCode}/cities`,
           { headers: HEADERS }
         );
         setCities(res.data);
@@ -325,18 +328,22 @@ export default function TripPage({ user = { id: "me" } }) {
       }
     };
     fetchCities();
-  }, [newTrip.country]);
+  }, [newTrip.country, newTrip.countryCode]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   /* ---------------- CRUD handlers ---------------- */
   const updateTrip = async (id, payload) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await axios.put(
-      `http://localhost:5005/api/trips/${id}`,
-      payload,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-      setTrips(prev => prev.map(t => t.id === id ? res.data : t));
+    try {
+      const res = await axios.put(
+        `http://localhost:5005/api/trips/${id}`,
+        payload,
+        { headers: getAuthHeaders() }
+      );
+      setTrips((prev) => prev.map((t) => (t.id === id ? res.data : t)));
     } catch (err) {
       console.error(err);
       alert("Failed to update trip");
@@ -344,12 +351,11 @@ export default function TripPage({ user = { id: "me" } }) {
   };
 
   const deleteTrip = async (id) => {
-  try {
-    const token = localStorage.getItem("token");
-    await axios.delete(`http://localhost:5005/api/trips/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-      setTrips(prev => prev.filter(t => t.id !== id));
+    try {
+      await axios.delete(`http://localhost:5005/api/trips/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      setTrips((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       console.error(err);
       alert("Failed to delete trip");
@@ -357,71 +363,100 @@ export default function TripPage({ user = { id: "me" } }) {
   };
 
   const addTrip = async (payload) => {
-  try {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token);
-    const res = await axios.post(
-      "http://localhost:5005/api/trips",
-      payload,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setTrips((prev) => [res.data, ...prev]);
-  } catch (err) {
-    console.error(err);
-    alert("Failed to create trip");
-  }
-};
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token from localStorage:", token);
+      const res = await axios.post("http://localhost:5005/api/trips", payload, {
+        headers: getAuthHeaders(),
+      });
+      setTrips((prev) => [res.data, ...prev]);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create trip");
+    }
+  };
 
   /* ---------------- Submit new trip ---------------- */
   const submitPlan = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!newTrip.country || !newTrip.city || !newTrip.startDate || !newTrip.endDate || !newTrip.countryCode)
-    return alert("Please select a valid country and city");
+    if (
+      !newTrip.country ||
+      !newTrip.city ||
+      !newTrip.startDate ||
+      !newTrip.endDate ||
+      !newTrip.countryCode
+    )
+      return alert("Please select a valid country and city");
 
-  const payload = {
-    title: form.title?.trim() || "Untitled trip",
-    city: newTrip.city,
-    country: newTrip.country,
-    countryCode: newTrip.countryCode,
-    startDate: newTrip.startDate,
-    endDate: newTrip.endDate,
-    preferences: Array.from(form.prefs).map(p => {
-      switch (p) {
-        case "Nature": return "nature";
-        case "Concerts & Events": return "concerts_and_events";
-        case "Gastronomy": return "gastronomy";
-        case "Touristic places": return "touristic_places";
-        default: return null;
-      }
-    }).filter(Boolean),
-    createdBy: user.id,
+    const payload = {
+      title: form.title?.trim() || "Untitled trip",
+      city: newTrip.city,
+      country: newTrip.country,
+      countryCode: newTrip.countryCode,
+      startDate: newTrip.startDate,
+      endDate: newTrip.endDate,
+      preferences: Array.from(form.prefs)
+        .map((p) => {
+          switch (p) {
+            case "Nature":
+              return "nature";
+            case "Concerts & Events":
+              return "concerts_and_events";
+            case "Gastronomy":
+              return "gastronomy";
+            case "Touristic places":
+              return "touristic_places";
+            default:
+              return null;
+          }
+        })
+        .filter(Boolean),
+      createdBy: user.id,
+    };
+
+    await addTrip(payload);
+
+    // Reset form
+    setNewTrip({
+      country: "",
+      countryCode: "",
+      city: "",
+      startDate: "",
+      endDate: "",
+    });
+    setForm({ title: "", prefs: new Set() });
+    setCities([]);
   };
 
-
-  await addTrip(payload);
-
-  // Reset form
-  setNewTrip({ country: "", countryCode: "", city: "", startDate: "", endDate: "" });
-  setForm({ title: "", prefs: new Set() });
-  setCities([]);
-};
-
-
   /* ---------------- Filter trips ---------------- */
-  const activeTrips = useMemo(() => trips.filter((t) => getTripStatus(t) === "active"), [trips]);
-  const upcomingTrips = useMemo(() => trips.filter((t) => getTripStatus(t) === "upcoming"), [trips]);
-  const pastTrips = useMemo(() => trips.filter((t) => getTripStatus(t) === "past"), [trips]);
+  const activeTrips = useMemo(
+    () => trips.filter((t) => getTripStatus(t) === "active"),
+    [trips]
+  );
+  const upcomingTrips = useMemo(
+    () => trips.filter((t) => getTripStatus(t) === "upcoming"),
+    [trips]
+  );
+  const pastTrips = useMemo(
+    () => trips.filter((t) => getTripStatus(t) === "past"),
+    [trips]
+  );
 
   const [countryInput, setCountryInput] = useState("");
   const [cityInput, setCityInput] = useState("");
 
-
-
-  if (loading) return <main className="trip-page"><div className="tm-loading">Loading trips…</div></main>;
+  if (loading)
+    return (
+      <main className="trip-page">
+        <div className="tm-loading">Loading trips…</div>
+      </main>
+    );
 
   const handleCountryInput = (val) => {
-    const found = countries.find(c => c.name.toLowerCase() === val.toLowerCase());
+    const found = countries.find(
+      (c) => c.name.toLowerCase() === val.toLowerCase()
+    );
     if (!found) {
       setNewTrip({ ...newTrip, countryCode: "", country: "", city: "" });
       setCities([]);
@@ -429,10 +464,10 @@ export default function TripPage({ user = { id: "me" } }) {
       setCityInput("");
       return false;
     }
-     setNewTrip({
-    ...newTrip,
-      countryCode: found.name,
-      country: found.iso2,
+    setNewTrip({
+      ...newTrip,
+      countryCode: found.iso2,
+      country: found.name,
       city: "",
     });
     setCities([]);
@@ -441,18 +476,19 @@ export default function TripPage({ user = { id: "me" } }) {
     return true;
   };
 
-const handleCityInput = (val) => {
-  const found = cities.find(c => c.name.toLowerCase() === val.toLowerCase());
-  if (!found) {
-    setNewTrip(prev => ({ ...prev, city: "" }));
-    setCityInput("");
-    return false;
-  }
-  setNewTrip(prev => ({ ...prev, city: found.name }));
-  setCityInput(found.name);
-  return true;
-};
-
+  const handleCityInput = (val) => {
+    const found = cities.find(
+      (c) => c.name.toLowerCase() === val.toLowerCase()
+    );
+    if (!found) {
+      setNewTrip((prev) => ({ ...prev, city: "" }));
+      setCityInput("");
+      return false;
+    }
+    setNewTrip((prev) => ({ ...prev, city: found.name }));
+    setCityInput(found.name);
+    return true;
+  };
 
   return (
     <main className="trip-page">
@@ -570,117 +606,121 @@ const handleCityInput = (val) => {
 
       {/* PLAN A NEW TRIP */}
       <section id="section-plan" className="trip-section">
-  <SectionHeader icon={planIcon} label="Plan a new trip" />
-  <div className="plan-card">
-    <form className="plan-grid" onSubmit={submitPlan}>
-      {/* Title */}
-      <label className="field">
-        <span>Title</span>
-        <input
-          type="text"
-          placeholder="Trip title"
-          value={form.title}
-          onChange={(e) =>
-            setForm(f => ({ ...f, title: e.target.value }))
-          }
-        />
-      </label>
+        <SectionHeader icon={planIcon} label="Plan a new trip" />
+        <div className="plan-card">
+          <form className="plan-grid" onSubmit={submitPlan}>
+            {/* Title */}
+            <label className="field">
+              <span>Title</span>
+              <input
+                type="text"
+                placeholder="Trip title"
+                value={form.title}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, title: e.target.value }))
+                }
+              />
+            </label>
 
-      {/* Country */}
-      <label className="field">
-        <span>Country</span>
-       <input
-        list="country-list"
-        value={countryInput || "" }
-        onChange={(e) => setCountryInput(e.target.value)}
-        onBlur={(e) => handleCountryInput(e.target.value)}
-        required
-      />
-      <datalist id="country-list">
-        {countries.map(c => (
-          <option key={c.iso2} value={c.name} />
-        ))}
-      </datalist>
-      </label>
+            {/* Country */}
+            <label className="field">
+              <span>Country</span>
+              <input
+                list="country-list"
+                value={countryInput || ""}
+                onChange={(e) => setCountryInput(e.target.value)}
+                onBlur={(e) => handleCountryInput(e.target.value)}
+                required
+              />
+              <datalist id="country-list">
+                {countries.map((c) => (
+                  <option key={c.iso2} value={c.name} />
+                ))}
+              </datalist>
+            </label>
 
-      {/* City */}
-      <label className="field">
-        <span>City</span>
-        <input
-          list="city-list"
-          value={cityInput || "" }
-          onChange={(e) => setCityInput(e.target.value)}
-          onBlur={(e) => handleCityInput(e.target.value)}
-          disabled={!cities.length}
-          required
-        />
-        <datalist id="city-list">
-          {cities.map(c => (
-            <option key={c.id} value={c.name} />
-          ))}
-        </datalist>
-      </label>
+            {/* City */}
+            <label className="field">
+              <span>City</span>
+              <input
+                list="city-list"
+                value={cityInput || ""}
+                onChange={(e) => setCityInput(e.target.value)}
+                onBlur={(e) => handleCityInput(e.target.value)}
+                disabled={!cities.length}
+                required
+              />
+              <datalist id="city-list">
+                {cities.map((c) => (
+                  <option key={c.id} value={c.name} />
+                ))}
+              </datalist>
+            </label>
 
-      {/* Dates */}
-      <label className="field">
-        <span>From</span>
-        <input
-          type="date"
-          name="startDate"
-          value={newTrip.startDate}
-          onChange={handleChange}
-          required
-        />
-      </label>
+            {/* Dates */}
+            <label className="field">
+              <span>From</span>
+              <input
+                type="date"
+                name="startDate"
+                value={newTrip.startDate}
+                onChange={handleChange}
+                required
+              />
+            </label>
 
-      <label className="field">
-        <span>To</span>
-        <input
-          type="date"
-          name="endDate"
-          value={newTrip.endDate}
-          onChange={handleChange}
-          required
-        />
-      </label>
+            <label className="field">
+              <span>To</span>
+              <input
+                type="date"
+                name="endDate"
+                value={newTrip.endDate}
+                onChange={handleChange}
+                required
+              />
+            </label>
 
-      {/* Preferences */}
-      <div className="plan-prefs">
-        <div className="panel-title">
-          <span>Preferences</span>
+            {/* Preferences */}
+            <div className="plan-prefs">
+              <div className="panel-title">
+                <span>Preferences</span>
+              </div>
+              <ul className="pref-list">
+                {[
+                  "Nature",
+                  "Concerts & Events",
+                  "Gastronomy",
+                  "Touristic places",
+                ].map((p) => (
+                  <li key={p}>
+                    <label className="pref-check">
+                      <input
+                        type="checkbox"
+                        checked={form.prefs.has(p)}
+                        onChange={(e) => {
+                          const next = new Set(form.prefs);
+                          if (e.target.checked) next.add(p);
+                          else next.delete(p);
+                          setForm((f) => ({ ...f, prefs: next }));
+                        }}
+                      />
+                      <span>{p}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Submit */}
+            <div className="plan-actions">
+              <button className="tm-btn" type="submit">
+                <img className="icon-img" src={saveIcon} alt="" aria-hidden />
+                <span>Save</span>
+              </button>
+            </div>
+          </form>
         </div>
-        <ul className="pref-list">
-          {["Nature", "Concerts & Events", "Gastronomy", "Touristic places"].map(p => (
-            <li key={p}>
-              <label className="pref-check">
-                <input
-                  type="checkbox"
-                  checked={form.prefs.has(p)}
-                  onChange={(e) => {
-                    const next = new Set(form.prefs);
-                    if (e.target.checked) next.add(p);
-                    else next.delete(p);
-                    setForm(f => ({ ...f, prefs: next }));
-                  }}
-                />
-                <span>{p}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Submit */}
-      <div className="plan-actions">
-        <button className="tm-btn" type="submit">
-          <img className="icon-img" src={saveIcon} alt="" aria-hidden />
-          <span>Save</span>
-        </button>
-      </div>
-    </form>
-  </div>
-</section>
-
+      </section>
     </main>
   );
 }

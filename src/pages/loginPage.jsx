@@ -9,6 +9,7 @@ export default function LoginPage({ onLogin }) {
     password: "",
     remember: false,
   });
+
   // Feedback state
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,10 +20,6 @@ export default function LoginPage({ onLogin }) {
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  // Minimal email validation helper
-  const isValidEmail = (str) => /\S+@\S+\.\S+/.test(str);
-
-  // Submit handler (replace with your real API call)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -31,23 +28,42 @@ export default function LoginPage({ onLogin }) {
       setError("Please fill in Email and Password.");
       return;
     }
-    if (!isValidEmail(form.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
 
     try {
       setLoading(true);
+      const base = "http://localhost:5005"; // ⚡️ tu backend local
 
-      // Example (replace with your endpoint):
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {...});
-      // const data = await res.json();
-      // if (!res.ok) return setError(data?.message || "Invalid email or password.");
+      console.log("Form before login:", form);
+      // Petición con fetch
+      const response = await fetch(`${base}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
 
-      onLogin(form); // notify parent/app
+      const data = await response.json();
+      console.log("Login fetch response:", data);
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Guardar token + user en localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Avisar al padre que ya está logueado
+      onLogin(data.user);
+
+      // Reset form
+      setForm({ email: "", password: "", remember: false });
     } catch (err) {
+      console.error("Login error:", err);
       setError("Network error. Please try again.");
-      console.log(err);
     } finally {
       setLoading(false);
     }
