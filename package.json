@@ -1,5 +1,5 @@
 {
-  "name": "frontend-galaway",
+  "name": "frontend-tripmatch",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "axios": "^1.12.2",
+    "cloudinary": "^1.41.3",
     "date-fns": "^4.1.0",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "react": "^19.1.1",
     "react-date-range": "^2.0.1",
     "react-day-picker": "^9.10.0",

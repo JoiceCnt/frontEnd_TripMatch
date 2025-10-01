@@ -1,6 +1,6 @@
 // src/pages/SignUpPage.jsx
 import { useState } from "react";
-import "./SignUpPage.css"; 
+import "./SignUpPage.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -73,7 +73,6 @@ export default function SignUpPage({ onSubmitForm }) {
   // Email básico
   const isValidEmail = (str) => /\S+@\S+\.\S+/.test(str);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -114,17 +113,17 @@ export default function SignUpPage({ onSubmitForm }) {
 
       const response = await axios.post(
         "http://localhost:5005/api/auth/register",
-        form
+        fd,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       console.log(response);
       setSuccess("Account created successfully!");
 
       navigate("/login");
-
     } catch (err) {
-     console.log(err);
-     setError(err?.message || "Something went wrong.");
-   }
+      console.log(err);
+      setError(err?.message || "Something went wrong.");
+    }
   };
 
   return (
@@ -337,11 +336,10 @@ export default function SignUpPage({ onSubmitForm }) {
         {success && <p className="tm-success">{success}</p>}
 
         {/* CTA */}
-        
-          <button className="tm-cta" type="submit" aria-label="Create an Account">
-            Create an Account
-          </button>
-      
+
+        <button className="tm-cta" type="submit" aria-label="Create an Account">
+          Create an Account
+        </button>
       </form>
     </div>
   );

@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import TripMatchNavbar from "./components/TripMatchNavbar";
@@ -9,7 +9,7 @@ import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
 import PolicyPage from "./pages/PolicyPage";
 import AboutPage from "./pages/AboutPage";
-import LoginPage from "./pages/loginPage";
+import LoginPage from "./pages/LoginPage.jsx";
 import SignUpPage from "./pages/SignUpPage";
 import TripsPage from "./pages/TripsPage";
 import Feed from "./pages/Feed";
@@ -27,6 +27,14 @@ export default function App() {
 
   const isHome = location.pathname === "/";
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUser({ photo: "" });
@@ -39,21 +47,32 @@ export default function App() {
       <TripMatchNavbar
         variant={isHome ? "home" : "internal"}
         isAuthenticated={isLoggedIn}
+        user={user} // <── passa o objeto inteiro
         onLoginClick={() => navigate("/login")}
         onLogout={handleLogout}
-        avatarUrl={user?.photo}
       />
 
       <main className="tm-main">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage onLogin={(user) => { setIsLoggedIn(true); setUser(user); navigate("/"); }} />} />
+          <Route
+            path="/login"
+            element={
+              <LoginPage
+                onLogin={(user) => {
+                  setIsLoggedIn(true);
+                  setUser(user);
+                  navigate("/");
+                }}
+              />
+            }
+          />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/policy" element={<PolicyPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/trips" element={<TripsPage user={user} />} />
-          <Route path="/feed" element={<Feed />} />         
+          <Route path="/feed" element={<Feed />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route
