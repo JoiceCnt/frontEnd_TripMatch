@@ -1,33 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Feed.css";
-import likeIcon from "../assets/Iconos/Like.png";
-import comentIcon from "../assets/Iconos/Comment.png";
-import { DateRange } from "react-date-range";
-import "react-date-range/dist/styles.css";
-import "react-date-range/dist/theme/default.css";
 
-function getUID(u) {
-  return (u && (u._id || u.id)) || null;
-}
-
-function authHeaders() {
-  const token = localStorage.getItem("authToken");
-  localStorage.getItem("authToken") ||
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("authToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 const defaultAvatar =
   "https://raw.githubusercontent.com/feathericons/feather/master/icons/user.svg";
 const demoUser = { id: "507f1f77bcf86cd799439011", name: "You", photo: "" };
 const CSC_API_URL = "https://api.countrystatecity.in/v1";
 const CSC_API_KEY = "eDZSRUZZSlhUMGpkNm1GUXVwUXN5REIxSGF3YldESllpaXhuWUM4RA==";
 const HEADERS = { "X-CSCAPI-KEY": CSC_API_KEY };
-function getBestDate(obj) {
-  const val = obj?.createdAt || obj?.updatedAt || obj?.date || obj?.timestamp;
-  return val ? new Date(val) : null;
-}
+
+import likeIcon from "../assets/Iconos/Like.png";
+import comentIcon from "../assets/Iconos/Comment.png";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
 
 export default function Feed({ currentUser = demoUser }) {
   const navigate = useNavigate();
@@ -62,7 +48,7 @@ export default function Feed({ currentUser = demoUser }) {
       .catch(console.error);
   }, []);
 
-  // aplica o fundo da rota e padding fluido do container
+  // Apply route background class when this page is mounted
   useEffect(() => {
     document.body.classList.add("feed-route");
     return () => document.body.classList.remove("feed-route");
@@ -163,21 +149,14 @@ export default function Feed({ currentUser = demoUser }) {
     }
   };
 
-  // ----------------- CRUD Comentários (somente datas) -----------------
+  // ----------------- CRUD Comentarios -----------------
   const addComment = async (postId, text) => {
     const clean = text?.trim();
     if (!clean) return;
 
-    const uid = getUID(currentUser);
-    if (!uid) {
-      console.error("No user id (need _id or id)");
-      return;
-    }
-
-    // não enviamos "user" no body; o backend pega do JWT
     const newComment = {
-      text: clean,
-      user: uid, // <<<<<<<<<<<<<< AQUI
+      text: text.trim(),
+      user: currentUser.id,
       createdAt: new Date().toISOString(),
     };
 
@@ -186,67 +165,41 @@ export default function Feed({ currentUser = demoUser }) {
         `http://localhost:5005/api/posts/${postId}/comments`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", ...authHeaders() }, // << envia Bearer token
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newComment),
         }
       );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
       const saved = await res.json();
-
-      // garante que haja createdAt (caso a API não devolva)
       setPosts((list) =>
         list.map((p) =>
-          (p._id || p.id) === postId
-            ? {
-                ...p,
-                comments: [
-                  ...(p.comments || []),
-                  {
-                    ...saved,
-                    createdAt: saved.createdAt || new Date().toISOString(),
-                  },
-                ],
-              }
+          p._id === postId
+            ? { ...p, comments: [...(p.comments || []), saved] }
             : p
         )
       );
     } catch (err) {
-      console.error("❌ ERROR addComment:", err);
+      console.error(err);
     }
   };
 
-  // ✅ ADIÇÃO: updateComment que preserva createdAt (para a data não sumir ao editar)
   const updateComment = async (postId, commentId, newText) => {
-    const clean = newText?.trim();
-    if (!clean) return;
-
     try {
       const res = await fetch(
         `http://localhost:5005/api/posts/${postId}/comments/${commentId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: clean }),
+          body: JSON.stringify({ text: newText }),
         }
       );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const updated = await res.json();
-
       setPosts((list) =>
         list.map((p) =>
-          (p._id || p.id) === postId
+          p._id === postId
             ? {
                 ...p,
                 comments: (p.comments || []).map((c) =>
-                  c._id === commentId
-                    ? {
-                        ...c,
-                        ...updated,
-                        // não perder a data original
-                        createdAt: c.createdAt || updated.createdAt,
-                      }
-                    : c
+                  c._id === commentId ? updated : c
                 ),
               }
             : p
@@ -487,182 +440,59 @@ function Composer({ onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!canPost) return;
-    onSubmit(text);
-    setText("");
+    onSubmit?.(value);
+    setValue("");
   };
 
   return (
-    <form className="tm-composer" onSubmit={submit}>
-      <button type="button" className="tm-avatar-btn" title="Your profile">
-        <img
-          src={currentUser.photo || defaultAvatar}
-          alt="Your profile"
-          className="tm-avatar"
-        />
-      </button>
-      <div className="tm-composer-main">
+    <section style={{ width: "min(800px,92%)", margin: "20px auto" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 14,
+          padding: 16,
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <label htmlFor="composer" style={{ fontWeight: 600 }}>
+          Create a post
+        </label>
         <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Share your plan, invite others, ask for tips..."
+          id="composer"
           rows={3}
+          placeholder="What's on your mind?"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          style={{
+            width: "100%",
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            padding: 12,
+            resize: "vertical",
+            outline: "none",
+          }}
         />
-      </div>
-      <div className="tm-composer-actions">
-        <button type="submit" className="tm-btn" disabled={!canPost}>
-          Post
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function PostCard({
-  post,
-  currentUser,
-  onAvatarClick,
-  onLike,
-  onUpdate,
-  onDelete,
-  onAddComment,
-  onUpdateComment,
-  onDeleteComment,
-  onCommentAvatarClick,
-}) {
-  const isOwner = currentUser?.id === post.author.id;
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(post.text);
-
-  const saveEdit = () => {
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    onUpdate({ text: trimmed });
-    setEditing(false);
-  };
-
-  return (
-    <li className="tm-post">
-      <div className="tm-post-head">
-        <button
-          className="tm-avatar-btn"
-          onClick={onAvatarClick}
-          title="Open profile"
-        >
-          <img
-            src={post.author.photo || defaultAvatar}
-            alt={post.author.name}
-            className="tm-avatar"
-          />
-        </button>
-        <div className="tm-author">
-          <button
-            className="tm-author-link"
-            onClick={onAvatarClick}
-            title="Open profile"
-          >
-            <strong>{post.author.name}</strong>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="submit" className="primary-btn">
+            Post
           </button>
-          <span className="tm-time">
-            {new Date(post.createdAt).toLocaleString()}
-            {post.updatedAt ? " · edited" : ""}
-          </span>
         </div>
-        <div className="tm-post-ops">
-          {isOwner && !editing && (
-            <>
-              <button
-                className="tm-link"
-                onClick={() => setEditing(true)}
-                title="Edit post"
-              >
-                Edit
-              </button>
-              <button
-                className="tm-link danger"
-                onClick={() =>
-                  window.confirm("Delete this post?") && onDelete()
-                }
-                title="Delete post"
-              >
-                Delete
-              </button>
-            </>
-          )}
-          {editing && (
-            <>
-              <button className="tm-link" onClick={saveEdit} title="Save">
-                Save
-              </button>
-              <button
-                className="tm-link"
-                onClick={() => {
-                  setEditing(false);
-                  setDraft(post.text);
-                }}
-                title="Cancel"
-              >
-                Cancel
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {!editing ? (
-        <p className="tm-post-text">{post.text}</p>
-      ) : (
-        <textarea
-          className="tm-edit-area"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={3}
-        />
-      )}
-
-      <div className="tm-post-actions">
-        <button
-          className="tm-action"
-          onClick={onLike}
-          aria-label="Like post"
-          title="Like"
-        >
-          ♥ {post.likes}
-        </button>
-        <span className="tm-divider" />
-        <span className="tm-action" title="Comments">
-          💬 {post.comments.length}
-        </span>
-      </div>
-
-      <Comments
-        comments={post.comments}
-        currentUser={currentUser}
-        onAdd={onAddComment}
-        onUpdate={onUpdateComment}
-        onDelete={onDeleteComment}
-        onAvatarClick={onCommentAvatarClick}
-      />
-    </li>
+      </form>
+    </section>
   );
 }
 
-/** Comentários (cada item é um componente — hooks no topo) */
-function Comments({
-  comments,
-  currentUser,
-  onAdd,
-  onUpdate,
-  onDelete,
-  onAvatarClick,
-}) {
-  const [text, setText] = useState("");
-  const submit = (e) => {
+// Minimal inline comment input
+function InlineComment({ onSubmit }) {
+  const [txt, setTxt] = useState("");
+
+  const send = (e) => {
     e.preventDefault();
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    onAdd(trimmed);
-    setText("");
+    onSubmit?.(txt);
+    setTxt("");
   };
 
   return (
@@ -801,20 +631,16 @@ function Comments({
   };
   return (
     <div className="tm-comments">
-      {comments.map(
-        (
-          c //added by joice to render date on the comments
-        ) => (
-          <CommentItem
-            key={c._id}
-            comment={c}
-            mine={(c.user || c.author) === currentUser.id} // << usa user
-            onUpdate={(txt) => onUpdate(c._id, txt)}
-            onDelete={() => onDelete(c._id)}
-            onAvatarClick={() => onAvatarClick(c.user || c.author)} // << usa user
-          />
-        )
-      )}
+      {comments.map((c) => (
+        <CommentItem
+          key={c._id}
+          comment={c}
+          mine={c.author === currentUser.id}
+          onUpdate={(txt) => onUpdate(c._id, txt)}
+          onDelete={() => onDelete(c._id)}
+          onAvatarClick={() => onAvatarClick(c.author)}
+        />
+      ))}
       <form className="tm-comment-form" onSubmit={submit}>
         <img
           src={currentUser.photo || defaultAvatar}
@@ -831,16 +657,11 @@ function Comments({
     </div>
   );
 }
-// edited by Joice on 28/09 to add date to the comments on feed
-function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
-  const authorId = comment.user || comment.author;
-  const author = { id: authorId, name: "User", photo: defaultAvatar };
 
+function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
+  const author = { id: comment.author, name: "User", photo: defaultAvatar };
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(comment.text || "");
-
-  const when = getBestDate(comment);
-  const whenLabel = when ? when.toLocaleString("pt-PT") : "Unknown date";
 
   const save = () => {
     const t = draft.trim();
@@ -859,21 +680,12 @@ function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
         />
       </button>
       <div>
-        <div className="tm-comment-meta">
-          <strong>{author.name}</strong>
-          <time
-            dateTime={when ? when.toISOString() : undefined}
-            className="tm-comment-time"
-          >
-            {whenLabel}
-          </time>
-        </div>
-
-        {!editing && <p>{comment.text}</p>}
-        {editing && (
-          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} />
-        )}
-
+        <strong>{author.name}</strong>
+        <span>
+          {comment.createdAt
+            ? new Date(comment.createdAt).toLocaleString()
+            : "Unknown date"}
+        </span>
         {mine && !editing && (
           <>
             <button onClick={() => setEditing(true)}>Edit</button>
@@ -893,11 +705,14 @@ function CommentItem({ comment, mine, onUpdate, onDelete, onAvatarClick }) {
             </button>
           </>
         )}
+        {!editing && <p>{comment.text}</p>}
+        {editing && (
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} />
+        )}
       </div>
     </div>
   );
 }
-
 /* ==================== RANGE PICKER (in-file component) ==================== */
 /** Button that opens a popover calendar (react-date-range) to pick start/end. */
 function RangePicker({ value, onChange, label = "Start date — End date" }) {
@@ -918,7 +733,7 @@ function RangePicker({ value, onChange, label = "Start date — End date" }) {
   const end = value.endDate ? new Date(value.endDate) : new Date();
 
   return (
-    <div className="tm-comment">
+    <div style={{ position: "relative" }} ref={ref}>
       <button
         type="button"
         className="date-range"

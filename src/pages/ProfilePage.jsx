@@ -59,10 +59,11 @@ export default function ProfilePage() {
     const url = URL.createObjectURL(file);
     setPhotoPreview(url);
   }
-
+  const [photoRemoved, setPhotoRemoved] = useState(false);
   function clearPhoto() {
     setPhotoFile(null);
     setPhotoPreview("");
+    setPhotoRemoved(true); // marcar que o user quer remover
   }
 
   function togglePref(key) {
@@ -82,6 +83,9 @@ export default function ProfilePage() {
       // se usuário subiu nova foto → envia o arquivo
       formData.append("photo", photoFile);
     }
+    if (photoRemoved) {
+      formData.append("removePhoto", "true"); // 👈 backend deve ler isso
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -99,6 +103,7 @@ export default function ProfilePage() {
 
       alert("✅ Profile saved!");
       if (data.photo) setPhotoPreview(data.photo); // atualiza preview
+      setPhotoPreview(data.photo || ""); // foto vazia se removida
     } catch (err) {
       console.error("❌ Error guardando perfil:", err);
       alert("Failed to save profile.");

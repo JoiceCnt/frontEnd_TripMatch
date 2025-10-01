@@ -32,7 +32,17 @@ export default function TripMatchNavbar({
 
   const doLogout = () => {
     setOpen(false);
+
+    // clean local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // external callback
     onLogout?.();
+
+    console.log("user logued out");
+
+    // redirect to homepage
     navigate("/");
   };
 
